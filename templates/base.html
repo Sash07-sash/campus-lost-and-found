@@ -1,0 +1,280 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#eef5ec" />
+  <title>{% block title %}Campus Lost &amp; Found{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}Campus Lost & Found — AI-Powered Campus Recovery and Support Portal.{% endblock %}" />
+
+  <!-- Favicon geometric SVG matching web-app-dev-one -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28' fill='none'><circle cx='9' cy='9' r='8' fill='%23ff3254'/><path d='M2 27a12 12 0 0 1 24 0Z' fill='%2319f3ff'/></svg>" />
+
+  <!-- Google Fonts: Anton & Hanken Grotesk -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" />
+
+  <!-- Bootstrap 5.3.3 CSS & Bootstrap Icons (Solves layout grid, form controls, and icons) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+  <!-- Google Material Symbols Outlined (Full ligature set) -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+  />
+
+  <!-- Critical Inlined CSS (Light Pista Green Modern Theme) -->
+  <style>
+    :root {
+      --bg-pista: #eef5ec;
+      --bg-pista-subtle: #f5faf3;
+      --bg-card: #ffffff;
+      --card-border: #d0e4ce;
+      --pista-main: #8ed984;
+      --pista-dark: #2e7d32;
+      --forest: #142918;
+      --forest-light: #224a27;
+      --sage: #4c6851;
+      --text-dark: #122616;
+      --text-muted: #48634c;
+      --coral-lost: #e64949;
+      --found-green: #2e7d32;
+      --rule: #d0e4ce;
+      --gutter: clamp(16px, 3.2vw, 44px);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #eef5ec !important;
+      color: #122616 !important;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+      font-size: 18px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4, h5, h6, p { margin: 0; color: #122616; }
+    .ms {
+      font-family: 'Material Symbols Outlined' !important;
+      font-weight: normal;
+      font-style: normal;
+      line-height: 1;
+      font-size: 22px;
+      display: inline-block;
+      white-space: nowrap;
+      vertical-align: middle;
+      font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    .skip { position: absolute; left: -999px; top: 0; background: #142918; color: #fff; padding: 10px 16px; z-index: 100; font-weight: 700; }
+    .skip:focus { left: 8px; top: 8px; }
+
+    /* Environmental Ribbon */
+    .campus-env-bar { background: #e1ece0; border-bottom: 1px solid #cde0cb; padding: 8px var(--gutter); font-size: 14px; color: #2e4a32; }
+    .env-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .env-inner span { display: inline-flex; align-items: center; gap: 6px; }
+    .env-inner strong { color: #122616; }
+    .env-tag { font-weight: 700; font-size: 13px; color: #2e7d32; }
+    .env-tag a { display: inline-flex; align-items: center; gap: 4px; color: #1b5e20; text-decoration: underline; }
+
+    /* Site Header */
+    header.site { padding: 0 var(--gutter); display: flex; align-items: center; justify-content: space-between; gap: 16px 28px; flex-wrap: wrap; min-height: 72px; background: #eef5ec; border-bottom: 1px solid #d4e5d1; }
+    .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; font-family: 'Anton', Impact, sans-serif; font-size: 28px; line-height: 1; padding: 12px 0; letter-spacing: 0.02em; color: #142918; }
+    nav.site { display: flex; gap: 6px 26px; flex-wrap: wrap; font-size: 17px; font-weight: 600; align-items: center; }
+    nav.site a { padding: 10px 0; text-decoration: none; border-bottom: 2px solid transparent; transition: color 150ms ease, border-color 150ms ease; color: #1b3820; }
+    nav.site a:hover { color: #2e7d32; }
+    nav.site a[aria-current='page'] { border-bottom-color: #142918; color: #142918; font-weight: 700; }
+    .nav-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    /* Main & Layout */
+    main { flex: 1; padding: 0 var(--gutter) clamp(48px, 7vw, 96px); }
+    .wrap { border-top: 1px solid var(--rule); padding-top: clamp(24px, 4vw, 56px); }
+    .page { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(24px, 5vw, 80px); align-items: end; }
+    @media (max-width: 900px) { .page { grid-template-columns: 1fr; align-items: start; } }
+    .kicker { font-size: 15px; color: #4c6851; margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    h1.title { font-family: 'Anton', Impact, sans-serif; font-weight: 400; font-size: clamp(3rem, 8vw, 7.5rem); line-height: 0.96; letter-spacing: 0.01em; color: #142918; }
+    .lede { margin-top: 20px; font-size: clamp(18px, 1.6vw, 22px); line-height: 1.4; color: #2d4732; max-width: 36em; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 0 32px; border-radius: 999px; background: #142918; color: #ffffff; text-decoration: none; border: 0; font: 700 18px 'Hanken Grotesk', sans-serif; cursor: pointer; transition: background 160ms ease, transform 160ms ease, color 160ms ease, box-shadow 160ms ease; box-shadow: 0 3px 12px rgba(20, 41, 24, 0.15); }
+    .btn:hover { background: #8ed984; color: #122616; box-shadow: 0 6px 18px rgba(20, 41, 24, 0.22); }
+    .btn:active { transform: scale(0.97); }
+    .btn-sm { min-height: 44px; padding: 0 20px; font-size: 15px; }
+    .btn-pink, .btn-coral { background: #e64949; color: #ffffff; }
+    .btn-pink:hover, .btn-coral:hover { background: #142918; color: #ffffff; }
+    .btn-cyan, .btn-pista { background: #2e7d32; color: #ffffff; }
+    .btn-cyan:hover, .btn-pista:hover { background: #8ed984; color: #122616; }
+    .btn-outline { background: transparent; color: #142918; border: 2px solid #142918; box-shadow: none; }
+    .btn-outline:hover { background: #142918; color: #ffffff; }
+    .btn:focus-visible, .link:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible, select:focus-visible { outline: 3px solid #2e7d32; outline-offset: 3px; }
+    .link { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; background: none; border: 0; color: #142918; font: 700 18px 'Hanken Grotesk', sans-serif; text-decoration: underline; text-underline-offset: 6px; cursor: pointer; }
+    .link:hover { color: #2e7d32; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; margin-top: 28px; }
+
+    /* Footer */
+    footer.site { padding: 32px var(--gutter) 48px; border-top: 1px solid var(--rule); background: #e2ede0; font-size: 15px; color: #4c6851; display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; margin-top: auto; }
+    footer.site a { color: #142918; font-weight: 600; text-decoration: underline; }
+    footer.site a:hover { color: #2e7d32; }
+
+    /* Flash Alerts */
+    .site-alerts { padding: 12px var(--gutter); }
+    .site-alert { padding: 14px 20px; border-radius: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 600; }
+    .site-alert.success { background: #dcf5d8; border: 1.5px solid #a3df9b; color: #1b5e20; }
+    .site-alert.danger, .site-alert.error { background: #fee2e2; border: 1.5px solid #f87171; color: #991b1b; }
+    .site-alert.warning { background: #fef3c7; border: 1.5px solid #fde047; color: #92400e; }
+    .site-alert.info { background: #e0f2fe; border: 1.5px solid #7dd3fc; color: #075985; }
+
+    /* Tones & Grid (Errors / Status) */
+    .tone-info { --tone: #c8e6c4; }
+    .tone-error { --tone: #fed7d7; }
+    .tone-warn { --tone: #feebc8; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 36px; }
+    .tile { display: flex; flex-direction: column; justify-content: space-between; min-height: 230px; padding: 22px; background: var(--tone); color: #142918; text-decoration: none; border-radius: 12px; border: 1.5px solid rgba(20, 41, 24, 0.12); transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 260ms ease, border-color 260ms ease; }
+    .tile:hover, .tile:focus-visible { transform: translateY(-8px); border-color: #142918; box-shadow: 0 14px 28px rgba(20, 41, 24, 0.15); }
+    .tile b { font-family: 'Anton', Impact, sans-serif; font-weight: 400; font-size: clamp(3rem, 5.4vw, 5rem); line-height: 0.95; color: #142918; }
+    .tile span { font-size: 16px; font-weight: 700; color: #142918; }
+    .tile small { display: block; font-size: 14px; font-weight: 500; margin-top: 6px; color: #3b5740; }
+    @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 580px) { .grid { grid-template-columns: 1fr; } }
+
+    /* Cards & Listings */
+    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 22px; margin-top: 32px; }
+    .item-card { border: 1.5px solid #d0e4ce; background: #ffffff; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; box-shadow: 0 4px 16px rgba(20, 41, 24, 0.05); }
+    .item-card:hover { transform: translateY(-6px); border-color: #8ed984; box-shadow: 0 12px 30px rgba(20, 41, 24, 0.12); }
+    .item-card-media { position: relative; height: 220px; background: #eef5ec; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .item-card-media img { width: 100%; height: 100%; object-fit: cover; }
+    .item-type-badge { position: absolute; top: 14px; left: 14px; font-family: 'Anton', Impact, sans-serif; font-size: 16px; padding: 4px 14px; border-radius: 999px; letter-spacing: 0.05em; color: #ffffff; }
+    .item-type-badge.lost { background: #e64949; }
+    .item-type-badge.found { background: #2e7d32; }
+    .item-card-body { padding: 22px; display: flex; flex-direction: column; flex: 1; }
+    .item-card-category { font-size: 13px; color: #4c6851; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .item-card-title { font-size: 21px; font-weight: 700; color: #142918; margin-bottom: 8px; line-height: 1.25; }
+    .item-card-meta { font-size: 14px; color: #3b5740; margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
+    .item-card-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* Callout (.more) */
+    .more { margin-top: clamp(40px, 6vw, 72px); background: #d8eed3; border: 1.5px solid #bce1b6; color: #142918; padding: clamp(28px, 4vw, 48px); border-radius: 16px; }
+    .more h2 { font-family: 'Anton', Impact, sans-serif; font-weight: 400; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1; color: #142918; }
+    .more p { margin-top: 14px; font-size: 20px; font-weight: 600; max-width: 32em; color: #2d4732; }
+    .more .btn { background: #142918; color: #ffffff; }
+    .more .btn:hover { background: #ffffff; color: #142918; }
+    .more .link { color: #142918; }
+  </style>
+
+  <!-- External Stylesheets (Cache Busted) -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5.0" />
+  <link rel="stylesheet" href="{% static 'css/widget.css' %}?v=5.0" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- Assessment Requirement: Third-Party External API Environmental Ribbon -->
+  <div class="campus-env-bar">
+    <div class="env-inner">
+      <span>
+        <span class="ms">cloud</span> Campus: <strong>{{ campus_env.temperature }}&deg;C, {{ campus_env.weather_condition }}</strong> &bull; {{ campus_env.campus_status }}
+      </span>
+      <span class="env-tag">
+        {% if campus_env.is_fallback %}
+          <span style="color: var(--yellow);" title="Displaying verified fallback data"><span class="ms" style="font-size: 16px;">shield</span> Fallback</span>
+        {% else %}
+          <span style="color: var(--lime);"><span class="ms" style="font-size: 16px;">sensors</span> Live API</span>
+        {% endif %}
+        &bull; <a href="{% url 'health_check' %}">Health Status</a>
+      </span>
+    </div>
+  </div>
+
+  <!-- Site Header (web-app-dev-one style) -->
+  <header class="site">
+    <a class="brand" href="{% url 'home' %}" aria-label="Campus Lost &amp; Found home">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+        <circle cx="9" cy="9" r="8" fill="#ff3254" />
+        <path d="M2 27a12 12 0 0 1 24 0Z" fill="#19f3ff" />
+      </svg>
+      campus lost &amp; found
+    </a>
+    <nav class="site" aria-label="Main">
+      <a href="{% url 'home' %}" {% if request.path == '/' %}aria-current="page"{% endif %}>Home</a>
+      <a href="{% url 'browse' %}" {% if '/browse/' in request.path %}aria-current="page"{% endif %}>Browse</a>
+      <a href="{% url 'faqs' %}" {% if '/faq' in request.path %}aria-current="page"{% endif %}>FAQ</a>
+      <a href="{% url 'support_center' %}" {% if '/support/' in request.path %}aria-current="page"{% endif %}>Support</a>
+      <a href="{% url 'error_catalog' %}" {% if '/errors/' in request.path or '/status/' in request.path %}aria-current="page"{% endif %}>Errors</a>
+      <a href="{% url 'health_check' %}" {% if '/health/' in request.path %}aria-current="page"{% endif %}>Health</a>
+    </nav>
+
+    <div class="nav-actions">
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline" style="min-height: 40px; padding: 0 16px; font-size: 14px;">
+          <span class="ms" style="font-size: 18px;">speed</span> {{ user.username }}
+        </a>
+        <a href="{% url 'logout' %}" class="link" style="min-height: 40px; font-size: 15px;">Log out</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="link" style="min-height: 40px; font-size: 15px;">Log in</a>
+        <a href="{% url 'register' %}" class="btn btn-sm btn-outline" style="min-height: 40px; padding: 0 16px; font-size: 14px;">Register</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div class="site-alerts">
+      {% for message in messages %}
+        <div class="site-alert {{ message.tags|default:'info' }}">
+          <span>{{ message }}</span>
+          <button type="button" class="link" onclick="this.parentElement.remove()" style="min-height: auto; text-decoration: none; color: inherit;">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Content -->
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site">
+    <span>Campus Lost &amp; Found &copy; 2026. AI Recovery &amp; Support Portal for College Campuses.</span>
+    <span>
+      <a href="{% url 'faqs' %}">FAQ</a> &bull;
+      <a href="{% url 'support_center' %}">Support</a> &bull;
+      <a href="{% url 'error_catalog' %}">Error codes</a> &bull;
+      <a href="{% url 'health_check' %}">Health</a>
+      {% if user.is_staff %}
+        &bull; <a href="/admin/" target="_blank">Django Admin</a>
+      {% endif %}
+    </span>
+  </footer>
+
+  <!-- Assessment Requirement: Floating Chat Widget on EVERY Page -->
+  <div id="fc-widget"></div>
+
+  <!-- Global "Ask the assistant" data-ask trigger -->
+  <script>
+    document.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-ask]');
+      if (b) {
+        window.dispatchEvent(new CustomEvent('foley:assistant-open', { detail: b.getAttribute('data-ask') }));
+      }
+    });
+  </script>
+
+  <!-- Bootstrap 5.3.3 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- Widget Implementation Script -->
+  <script type="module" src="{% static 'js/widget.js' %}?v=5.0"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Support — Campus Lost &amp; Found{% endblock %}
+{% block meta_desc %}Contact Campus Lost & Found IT helpdesk and check the status of an existing ticket.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <p class="kicker">Campus IT Helpdesk &bull; SQL Persisted</p>
+  <h1 class="title">Support</h1>
+  <p class="lede">
+    Send us a support ticket and our campus administration will follow up. The AI assistant can also open one for you when it can't answer a question.
+  </p>
+
+  <div class="cols">
+    <!-- Left Column: Submit New Ticket -->
+    <section class="panel" aria-labelledby="new-ticket">
+      <h2 id="new-ticket">New ticket</h2>
+      <form method="post" action="{% url 'support_center' %}" novalidate>
+        {% csrf_token %}
+        <div class="hp" aria-hidden="true">
+          <label>Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <label class="field">
+          <span>Contact Email</span>
+          <input name="contact_email" type="email" value="{{ form.contact_email.value|default:'' }}" required placeholder="you@college.edu" autocomplete="email" />
+          {% if form.contact_email.errors %}
+            <span class="err">{{ form.contact_email.errors.0 }}</span>
+          {% endif %}
+        </label>
+
+        <label class="field">
+          <span>Subject</span>
+          <input name="subject" value="{{ form.subject.value|default:'' }}" required maxlength="200" placeholder="e.g. Photo upload error or claim issue" />
+          {% if form.subject.errors %}
+            <span class="err">{{ form.subject.errors.0 }}</span>
+          {% endif %}
+        </label>
+
+        <label class="field">
+          <span>Related Error Code (Optional)</span>
+          <input name="related_error_code" value="{{ form.related_error_code.value|default:prefill_error|default:'' }}" placeholder="e.g. 404, 500, CLF-1001" />
+          {% if form.related_error_code.errors %}
+            <span class="err">{{ form.related_error_code.errors.0 }}</span>
+          {% endif %}
+        </label>
+
+        <label class="field">
+          <span>Priority</span>
+          <select name="priority">
+            <option value="LOW">Low — General inquiry</option>
+            <option value="MEDIUM" selected>Medium — Standard item issue</option>
+            <option value="HIGH">High — Urgent (ID card or expensive device)</option>
+            <option value="URGENT">Urgent — System error preventing access</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>What happened?</span>
+          <textarea name="message" required maxlength="4000" placeholder="Please describe the issue or error in detail...">{{ form.message.value|default:'' }}</textarea>
+          {% if form.message.errors %}
+            <span class="err">{{ form.message.errors.0 }}</span>
+          {% endif %}
+        </label>
+
+        <button class="btn" type="submit">
+          Send ticket <span class="ms" aria-hidden="true">arrow_forward</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Right Column: Check a Ticket -->
+    <section class="panel" aria-labelledby="check-ticket">
+      <h2 id="check-ticket">Check a ticket</h2>
+      <form id="lookup-form" novalidate onsubmit="handleTicketLookup(event)">
+        <label class="field">
+          <span>Ticket reference</span>
+          <input id="l-ref" placeholder="e.g. TKT-DEMO1001 or CLF-XXXX" autocomplete="off" required />
+        </label>
+        <label class="field">
+          <span>Email used for the ticket (Optional)</span>
+          <input id="l-email" type="email" placeholder="you@college.edu" autocomplete="email" />
+        </label>
+        <button class="btn btn-outline" type="submit" id="l-submit-btn">
+          Check status <span class="ms" aria-hidden="true">search</span>
+        </button>
+      </form>
+
+      <div id="lookup-out" aria-live="polite"></div>
+
+      {% if user.is_authenticated and recent_tickets %}
+        <div style="margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 24px;">
+          <h3 style="font-family: 'Anton', Impact, sans-serif; font-size: 22px; margin-bottom: 14px;">Your Recent Tickets</h3>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for t in recent_tickets %}
+              <div style="padding: 12px 16px; border: 1px solid var(--rule); border-radius: 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong style="color: var(--cyan);">#{{ t.ticket_number }}</strong>
+                  <div style="color: var(--text2); font-size: 14px;">{{ t.subject|truncatechars:35 }}</div>
+                </div>
+                <span class="pill ok" style="font-size: 12px; padding: 2px 10px;">{{ t.get_status_display }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function handleTicketLookup(e) {
+    e.preventDefault();
+    const ref = document.getElementById('l-ref').value.trim();
+    const email = document.getElementById('l-email').value.trim();
+    const out = document.getElementById('lookup-out');
+    const btn = document.getElementById('l-submit-btn');
+
+    if (!ref) {
+      out.innerHTML = '<div class="lookup-result bad">Please enter a ticket reference.</div>';
+      return;
+    }
+
+    btn.disabled = true;
+    out.innerHTML = '<div class="lookup-result ok" style="background: rgba(25, 243, 255, 0.15); color: #fff;">Searching campus database…</div>';
+
+    try {
+      const url = `/api/tickets/lookup/?ref=${encodeURIComponent(ref)}&email=${encodeURIComponent(email)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (res.ok && data.status === 'ok') {
+        const t = data.ticket;
+        out.innerHTML = `
+          <div class="lookup-result ok">
+            <b>${t.reference}</b>
+            <div><strong>Status:</strong> ${t.status} &bull; <strong>Priority:</strong> ${t.priority}</div>
+            <div style="margin-top: 6px; font-size: 14px;"><strong>Subject:</strong> ${t.subject}</div>
+            <div style="margin-top: 4px; font-size: 13px; color: #333;">Logged on ${t.created_at}</div>
+          </div>
+        `;
+      } else {
+        out.innerHTML = `<div class="lookup-result bad">${data.error || 'Ticket not found.'}</div>`;
+      }
+    } catch (err) {
+      out.innerHTML = '<div class="lookup-result bad">Connection error checking ticket.</div>';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+{% endblock %}

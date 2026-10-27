@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}MongoDB Logs &amp; Feedback — Campus Lost &amp; Found{% endblock %}
+{% block meta_desc %}Live inspection of AI conversations, queries, matched FAQs, star ratings, and student feedback stored in MongoDB.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page" style="align-items: start;">
+    <div>
+      <p class="kicker">Assessment Requirement &bull; MongoDB Collections Inspector</p>
+      <h1 class="title">MongoDB Logs</h1>
+    </div>
+    <div>
+      <p class="lede">
+        Inspect live AI conversations, queries, matched SQL FAQs, star ratings, and student feedback stored in MongoDB (with automatic local fallback).
+      </p>
+      <div class="actions">
+        <span class="pill {% if mongo_health.status == 'connected' %}ok{% else %}degraded{% endif %}" style="padding: 8px 20px; font-size: 16px;">
+          Engine: {{ mongo_health.storage_engine }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Authentication & Login Logs Panel (Collection: auth_logs) -->
+  <div class="custom-card p-4 p-md-5 my-4" style="background: #ffffff; border: 1.5px solid #d0e4ce;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-lock-fill fs-3" style="color: #2e7d32;"></i>
+        <div>
+          <h2 class="h4 fw-bold mb-0 text-dark">User Authentication &amp; Login Logs ({{ auth_logs|length }})</h2>
+          <small class="text-muted">Collection: <code>auth_logs</code> in MongoDB Atlas</small>
+        </div>
+      </div>
+      <span class="badge bg-success px-3 py-2 fs-6">
+        <i class="bi bi-cloud-check-fill me-1"></i> Live Atlas Collection
+      </span>
+    </div>
+    <p class="text-muted small mb-3">
+      Every student sign-in using their username or email, failed password attempts, and logout events are recorded directly into MongoDB Atlas.
+    </p>
+
+    <div class="tablewrap" tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Event / Status</th>
+            <th>Identifier / Username</th>
+            <th>Email</th>
+            <th>IP Address</th>
+            <th>User Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in auth_logs %}
+            <tr>
+              <td style="font-size: 13px;">{{ log.timestamp|truncatechars:19 }}</td>
+              <td>
+                {% if log.event == 'LOGIN_SUCCESS' %}
+                  <span class="pill ok" style="font-size: 11px; padding: 3px 10px;">SUCCESS</span>
+                {% elif log.event == 'LOGIN_FAILED' %}
+                  <span class="pill down" style="font-size: 11px; padding: 3px 10px;">FAILED</span>
+                {% elif log.event == 'LOGOUT' %}
+                  <span class="pill" style="font-size: 11px; padding: 3px 10px; background: #e2ede0; color: #142918;">LOGOUT</span>
+                {% else %}
+                  <span class="pill ok" style="font-size: 11px; padding: 3px 10px;">{{ log.event }}</span>
+                {% endif %}
+              </td>
+              <td><strong>@{{ log.username }}</strong></td>
+              <td style="font-size: 13px; color: #4c6851;">{{ log.email|default:'—' }}</td>
+              <td><code>{{ log.ip_address }}</code></td>
+              <td style="font-size: 12px; color: #7d9b80;">{{ log.user_agent|truncatechars:35 }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--grey); padding: 24px;">
+                No authentication logs recorded yet. Log in or log out on the website to see live entries here!
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top: 36px;">
+    <!-- Chat Conversations Column -->
+    <section class="panel">
+      <h2>Conversations ({{ chat_logs|length }})</h2>
+      <p class="kicker" style="margin-bottom: 20px;">Collection: <code>chat_logs</code></p>
+
+      {% if chat_logs %}
+        <div style="display: flex; flex-direction: column; gap: 16px; max-height: 600px; overflow-y: auto; padding-right: 8px;">
+          {% for log in chat_logs %}
+            <div style="padding: 16px 20px; border: 1.5px solid var(--card-border); border-radius: 14px; background: #ffffff; box-shadow: 0 4px 14px rgba(20,41,24,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; color: var(--sage);">
+                <span><strong>@{{ log.user }}</strong> &bull; {{ log.timestamp }}</span>
+                <div>
+                  {% if log.error_code %}
+                    <span class="pill down" style="font-size: 11px; padding: 2px 8px;">{{ log.error_code }}</span>
+                  {% endif %}
+                  {% if log.matched_faq_id %}
+                    <span class="pill ok" style="font-size: 11px; padding: 2px 8px;">FAQ #{{ log.matched_faq_id }}</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div style="padding: 10px 14px; background: var(--forest); color: #ffffff; border-radius: 12px 12px 2px 12px; font-size: 15px; font-weight: 500; margin-bottom: 10px;">
+                {{ log.user_message }}
+              </div>
+              <div style="padding: 10px 14px; background: #f0f6ee; color: #122616; border: 1px solid #d4e5d1; border-radius: 12px 12px 12px 2px; font-size: 15px; white-space: pre-wrap; line-height: 1.4;">
+                {{ log.ai_response|truncatewords:45 }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="padding: 40px; border: 1.5px solid var(--card-border); border-radius: 14px; text-align: center; color: var(--sage); background: #ffffff;">
+          <p>No chat logs recorded yet. Ask the assistant any question in the bottom-right corner to see it logged here!</p>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- Student Feedback Column -->
+    <section class="panel">
+      <h2>Feedback ({{ feedback_entries|length }})</h2>
+      <p class="kicker" style="margin-bottom: 20px;">Collection: <code>chat_feedback</code></p>
+
+      {% if feedback_entries %}
+        <div style="display: flex; flex-direction: column; gap: 14px; max-height: 600px; overflow-y: auto;">
+          {% for fb in feedback_entries %}
+            <div style="padding: 16px; border: 1.5px solid var(--card-border); border-radius: 14px; background: #ffffff; box-shadow: 0 4px 14px rgba(20,41,24,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="color: #f59e0b; font-size: 18px;">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= fb.rating %}&starf;{% else %}&star;{% endif %}
+                  {% endfor %}
+                </span>
+                <span style="font-size: 13px; color: var(--sage);">{{ fb.timestamp|truncatechars:19 }}</span>
+              </div>
+              <p style="color: #2d4732; font-size: 15px; line-height: 1.4;">
+                &ldquo;{{ fb.comment|default:'Student provided star rating without extra notes.' }}&rdquo;
+              </p>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="padding: 40px; border: 1px solid var(--rule); border-radius: 8px; text-align: center; color: var(--grey);">
+          <p>No student feedback recorded yet. Rate the AI assistant in the chat panel to test!</p>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

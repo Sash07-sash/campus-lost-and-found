@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FAQ — Campus Lost &amp; Found{% endblock %}
+{% block meta_desc %}Answers to common questions about reporting, searching, recovery claims, and using Campus Lost & Found.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page" style="align-items: start;">
+    <div>
+      <p class="kicker"><span id="faq-count">{{ total_faqs }}</span> questions, answered</p>
+      <h1 class="title">FAQ</h1>
+    </div>
+    <p class="lede">
+      Quick answers about reporting lost &amp; found items, matching, in-app claims, privacy, and support. Can't find yours? Ask our assistant, or open a ticket.
+    </p>
+  </div>
+
+  <label class="search">
+    <span>Search the questions</span>
+    <input id="faq-search" type="search" placeholder="e.g. calculator, claims, ID card, error 404, privacy" autocomplete="off" />
+  </label>
+  <p class="empty" id="faq-empty" style="color: var(--grey); margin-top: 24px;" hidden>No question matches that. Try different words, or ask our AI assistant.</p>
+
+  <div id="faq-list" aria-live="polite">
+    {% regroup faqs by get_category_display as categorized_faqs %}
+    {% for group in categorized_faqs %}
+      <section class="group" aria-labelledby="cat-{{ forloop.counter }}">
+        <h2 id="cat-{{ forloop.counter }}">{{ group.grouper }}</h2>
+        {% for faq in group.list %}
+          <details data-text="{{ faq.question|lower }} {{ faq.answer|lower }} {{ faq.get_category_display|lower }}">
+            <summary>
+              <span>{{ faq.question }}</span>
+              <span class="ms" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="answer">
+              {{ faq.answer|linebreaks }}
+            </div>
+          </details>
+        {% endfor %}
+      </section>
+    {% empty %}
+      <p class="empty" style="color: var(--grey); margin-top: 32px;">No FAQs are published yet.</p>
+    {% endfor %}
+  </div>
+
+  <section class="more">
+    <h2>Still stuck?</h2>
+    <p>Our campus assistant answers directly from this SQL database. If it can't find an answer, it opens a support ticket for you.</p>
+    <div class="actions">
+      <button class="btn" type="button" data-ask="I need help finding an item on campus">
+        <span class="ms" aria-hidden="true">chat_bubble</span> Ask the assistant
+      </button>
+      <a class="link" href="{% url 'support_center' %}">Open a support ticket</a>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var box = document.getElementById('faq-search');
+    var empty = document.getElementById('faq-empty');
+
+    if (box) {
+      box.addEventListener('input', function () {
+        var q = box.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+        var shown = 0;
+        document.querySelectorAll('details').forEach(function (d) {
+          var text = d.dataset.text || '';
+          var ok = q.every(function (w) { return text.indexOf(w) !== -1; });
+          d.hidden = !ok;
+          if (ok) shown++;
+          if (q.length && ok) d.open = true;
+          else if (!q.length) d.open = false;
+        });
+        document.querySelectorAll('.group').forEach(function (g) {
+          g.hidden = !g.querySelector('details:not([hidden])');
+        });
+        if (empty) empty.hidden = shown !== 0;
+      });
+    }
+  })();
+</script>
+{% endblock %}

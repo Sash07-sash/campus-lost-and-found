@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Campus Lost &amp; Found — Place Your Belongings Back in Safe Hands{% endblock %}
+{% block meta_desc %}AI-powered campus recovery and support portal for college students and staff.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <!-- Hero Section -->
+  <div class="page" style="align-items: start;">
+    <div>
+      <p class="kicker">Centralized College Recovery Portal &bull; AI Powered</p>
+      <h1 class="title">RECOVER LOST CAMPUS BELONGINGS.</h1>
+    </div>
+    <div>
+      <p class="lede">
+        Report misplaced ID cards, calculators, chargers, or keys. Our automated rule-based matching engine pairs lost reports with found reports, while an integrated AI assistant answers your questions 24/7.
+      </p>
+      <div class="actions">
+        <a class="btn btn-pink" href="{% url 'report_lost' %}">
+          <span class="ms" aria-hidden="true">report</span> Report Lost Item
+        </a>
+        <a class="btn btn-cyan" href="{% url 'report_found' %}">
+          <span class="ms" aria-hidden="true">add_circle</span> Report Found Item
+        </a>
+        <a class="btn btn-outline" href="{% url 'browse' %}">
+          <span class="ms" aria-hidden="true">search</span> Browse All
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Campus Stats Counter -->
+  <div style="margin-top: clamp(40px, 6vw, 64px); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; border-top: 1.5px solid var(--rule); border-bottom: 1.5px solid var(--rule); padding: 28px 0;">
+    <div>
+      <div style="font-family: 'Anton', Impact, sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1; color: var(--forest);">{{ total_items }}</div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--sage); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Total Listings</div>
+    </div>
+    <div>
+      <div style="font-family: 'Anton', Impact, sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1; color: var(--coral-lost);">{{ lost_count }}</div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--sage); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Lost Reports</div>
+    </div>
+    <div>
+      <div style="font-family: 'Anton', Impact, sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1; color: var(--pista-dark);">{{ found_count }}</div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--sage); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Found Belongings</div>
+    </div>
+    <div>
+      <div style="font-family: 'Anton', Impact, sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1; color: #1b5e20;">{{ recovered_count }}</div>
+      <div style="font-size: 14px; font-weight: 700; color: var(--sage); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Safely Recovered</div>
+    </div>
+  </div>
+
+  <!-- Quick Category Filter Chips -->
+  <div style="margin-top: 48px;">
+    <p class="kicker">Browse by Category</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;">
+      <a href="{% url 'browse' %}" class="btn btn-sm btn-outline" style="border-radius: 999px;">All Items</a>
+      {% for code, label in categories %}
+        <a href="{% url 'browse' %}?category={{ code }}" class="btn btn-sm btn-outline" style="border-radius: 999px;">
+          {{ label }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Campus Listings Grid -->
+  <div style="margin-top: clamp(48px, 6vw, 72px);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <p class="kicker">Live Campus Feed</p>
+        <h2 style="font-family: 'Anton', Impact, sans-serif; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1;">Recent Reports</h2>
+      </div>
+      <a href="{% url 'browse' %}" class="link" style="font-size: 16px;">View all listings &rarr;</a>
+    </div>
+
+    <div class="items-grid">
+      {% for item in recent_items %}
+        <article class="item-card">
+          <div class="item-card-media">
+            {% if item.image %}
+              <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy" />
+            {% else %}
+              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--grey);">
+                <span class="ms" style="font-size: 48px;">image_not_supported</span>
+                <span style="font-size: 13px;">No photo provided</span>
+              </div>
+            {% endif %}
+            <span class="item-type-badge {% if item.report_type == 'LOST' %}lost{% else %}found{% endif %}">
+              {{ item.get_report_type_display }}
+            </span>
+          </div>
+          <div class="item-card-body">
+            <span class="item-card-category">{{ item.get_category_display }}</span>
+            <h3 class="item-card-title">{{ item.title }}</h3>
+            <div class="item-card-meta">
+              <span><span class="ms" style="font-size: 16px;">location_on</span> {{ item.campus_location }}</span>
+              <span><span class="ms" style="font-size: 16px;">schedule</span> {{ item.date_lost_or_found|date:"M d, Y" }}</span>
+            </div>
+            <p style="font-size: 15px; color: var(--text2); line-height: 1.4; margin-bottom: 20px; flex: 1;">
+              {{ item.description|truncatewords:18 }}
+            </p>
+            <div style="display: flex; gap: 8px;">
+              <a href="{% url 'item_detail' pk=item.pk %}" class="btn btn-sm" style="flex: 1; background: #fff; color: #000;">
+                View Details
+              </a>
+              {% if item.report_type == 'FOUND' and user != item.created_by %}
+                <a href="{% url 'item_detail' pk=item.pk %}#claim-section" class="btn btn-sm btn-cyan" style="padding: 0 16px;" title="Claim this item">
+                  Claim
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div style="grid-column: 1 / -1; padding: 48px; border: 1px solid var(--rule); text-align: center; border-radius: 8px;">
+          <p style="color: var(--grey); font-size: 18px;">No active listings found. Be the first to report a lost or found item!</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- How It Works Section -->
+  <div style="margin-top: clamp(64px, 8vw, 96px); border-top: 1px solid var(--rule); padding-top: 48px;">
+    <p class="kicker">Step by Step Guide</p>
+    <h2 style="font-family: 'Anton', Impact, sans-serif; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1; margin-bottom: 32px;">How Campus Recovery Works</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+      <div style="padding: 24px; border: 1.5px solid var(--card-border); border-radius: 14px; background: #ffffff; box-shadow: 0 4px 14px rgba(20,41,24,0.05);">
+        <div style="font-family: 'Anton', Impact, sans-serif; font-size: 40px; color: var(--pista-dark); margin-bottom: 8px;">01</div>
+        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--forest);">Report Your Belonging</h3>
+        <p style="color: #2d4732; font-size: 16px; line-height: 1.45;">
+          Fill out a quick report with item details, campus spot (Library, Canteen, Lab), and an optional photo.
+        </p>
+      </div>
+
+      <div style="padding: 24px; border: 1.5px solid var(--card-border); border-radius: 14px; background: #ffffff; box-shadow: 0 4px 14px rgba(20,41,24,0.05);">
+        <div style="font-family: 'Anton', Impact, sans-serif; font-size: 40px; color: var(--coral-lost); margin-bottom: 8px;">02</div>
+        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--forest);">Automated Match Engine</h3>
+        <p style="color: #2d4732; font-size: 16px; line-height: 1.45;">
+          Our rule-based engine scores title keywords, category, spot, and date to surface high-confidence matches.
+        </p>
+      </div>
+
+      <div style="padding: 24px; border: 1.5px solid var(--card-border); border-radius: 14px; background: #ffffff; box-shadow: 0 4px 14px rgba(20,41,24,0.05);">
+        <div style="font-family: 'Anton', Impact, sans-serif; font-size: 40px; color: #1b5e20; margin-bottom: 8px;">03</div>
+        <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--forest);">Safe In-App Handover</h3>
+        <p style="color: #2d4732; font-size: 16px; line-height: 1.45;">
+          Claimants submit private proof details. No personal phone numbers are ever leaked to public noticeboards.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Callout Section (Matching web-app-dev-one) -->
+  <section class="more" style="margin-top: clamp(64px, 8vw, 96px);">
+    <h2>Questions or need assistance?</h2>
+    <p>Our AI Assistant is available on every page to answer college FAQs, explain error codes, or open a support ticket.</p>
+    <div class="actions">
+      <button class="btn" type="button" data-ask="How do I use Campus Lost &amp; Found to recover my lost ID card?">
+        <span class="ms" aria-hidden="true">chat_bubble</span> Ask the assistant
+      </button>
+      <a class="link" href="{% url 'faqs' %}">View 10+ SQL FAQs</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

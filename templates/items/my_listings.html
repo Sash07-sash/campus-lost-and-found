@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Listings - Campus Lost &amp; Found{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div>
+      <h1 class="h2 fw-bold text-dark mb-1">My Campus Listings</h1>
+      <p class="text-muted small mb-0">View, manage, and update the status of your reported lost and found items.</p>
+    </div>
+    <div class="d-flex gap-2 mt-3 mt-md-0">
+      <a href="{% url 'report_lost' %}" class="btn btn-danger btn-sm px-3 fw-semibold">
+        <i class="bi bi-plus-circle me-1"></i> Report Lost
+      </a>
+      <a href="{% url 'report_found' %}" class="btn btn-teal-custom btn-sm px-3 fw-semibold">
+        <i class="bi bi-plus-circle me-1"></i> Report Found
+      </a>
+    </div>
+  </div>
+
+  <!-- Status Filter Tabs -->
+  <ul class="nav nav-pills mb-4 bg-white p-2 rounded-3 border shadow-sm">
+    <li class="nav-item">
+      <a class="nav-link {% if not status_filter %}active{% endif %}" href="{% url 'my_listings' %}">
+        All Items
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if status_filter == 'OPEN' %}active{% endif %}" href="{% url 'my_listings' %}?status=OPEN">
+        Open
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if status_filter == 'CLAIM_PENDING' %}active{% endif %}" href="{% url 'my_listings' %}?status=CLAIM_PENDING">
+        Claim Pending
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if status_filter == 'RECOVERED' %}active{% endif %}" href="{% url 'my_listings' %}?status=RECOVERED">
+        Recovered
+      </a>
+    </li>
+  </ul>
+
+  <!-- Listings -->
+  {% if page_obj %}
+    <div class="custom-card shadow-sm overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th style="min-width: 250px;">Item Title</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Campus Location</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in page_obj %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; flex-shrink: 0; background: #e2e8f0; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                      {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                      {% else %}
+                        <i class="bi bi-camera text-secondary opacity-50"></i>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <a href="{{ item.get_absolute_url }}" class="fw-bold text-dark text-decoration-none">
+                        {{ item.title }}
+                      </a>
+                      <div class="small text-muted">ID: #{{ item.id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge {% if item.report_type == 'LOST' %}bg-danger{% else %}bg-success{% endif %}">
+                    {{ item.get_report_type_display }}
+                  </span>
+                </td>
+                <td class="small">{{ item.get_category_display }}</td>
+                <td class="small text-muted">{{ item.campus_location }}</td>
+                <td class="small text-muted">{{ item.date_lost_or_found|date:"M d, Y" }}</td>
+                <td>
+                  <span class="badge bg-{{ item.status_badge }}">{{ item.get_status_display }}</span>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <a href="{{ item.get_absolute_url }}" class="btn btn-outline-primary" title="View details">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url 'edit_item' item.pk %}" class="btn btn-outline-secondary" title="Edit listing">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    {% if item.status != 'RECOVERED' %}
+                      <form action="{% url 'update_item_status' item.pk %}" method="POST" class="d-inline" onsubmit="return confirm('Mark as RECOVERED?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="RECOVERED">
+                        <button type="submit" class="btn btn-outline-success" title="Mark as Recovered">
+                          <i class="bi bi-check2"></i>
+                        </button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+      <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a></li>
+          {% endif %}
+          <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  {% else %}
+    <div class="text-center py-5 bg-white rounded-4 border p-4">
+      <i class="bi bi-inbox display-4 text-muted mb-2 d-block"></i>
+      <h4 class="fw-bold text-dark">No Listings Found</h4>
+      <p class="text-muted small mb-4">You have not reported any items matching this filter.</p>
+      <div class="d-flex justify-content-center gap-2">
+        <a href="{% url 'report_lost' %}" class="btn btn-danger btn-sm px-3">Report Lost Item</a>
+        <a href="{% url 'report_found' %}" class="btn btn-teal-custom btn-sm px-3">Report Found Item</a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

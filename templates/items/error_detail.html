@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ error.code }} · {{ error.title }} — Campus Lost &amp; Found{% endblock %}
+
+{% block content %}
+<div class="wrap {% if error.code == '404' or error.code == '500' or error.code == '403' or error.code == '400' or error.code == '401' %}tone-error{% elif error.code == '429' or error.code == '503' %}tone-warn{% else %}tone-info{% endif %}">
+  <div class="page">
+    <h2 class="code" aria-label="Error {{ error.code }}">{{ error.code }}</h2>
+    <div>
+      <div class="shapes" aria-hidden="true">
+        <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="26" fill="var(--tone)" /></svg>
+        <svg viewBox="0 0 56 56"><path d="M2 40a26 26 0 0 1 52 0Z" fill="var(--tone)" /></svg>
+        <svg viewBox="0 0 56 56"><path d="M28 2l26 50H2Z" fill="var(--tone)" /></svg>
+      </div>
+      <p class="kicker">{{ error.code }} &bull; {{ error.title }}</p>
+      <h1 class="headline">{{ error.title }}</h1>
+      <p class="message">{{ error.student_explanation }}</p>
+      <div class="help">
+        <p style="margin-bottom: 8px;"><strong>Why it happens:</strong> {{ error.technical_summary }}</p>
+        <p><strong>Campus Troubleshooting:</strong></p>
+        <ul style="padding-left: 20px; margin-top: 4px;">
+          {% for step in error.campus_troubleshooting %}
+            <li>{{ step }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="actions">
+        <a class="btn" href="{% url 'error_catalog' %}">
+          <span class="ms" aria-hidden="true">arrow_back</span>All Error Codes
+        </a>
+        <button class="btn" type="button" data-ask="Explain what error {{ error.code }} means in Campus Lost &amp; Found and how to resolve it">
+          <span class="ms" aria-hidden="true">chat_bubble</span>Ask the Assistant
+        </button>
+        <a class="link" href="{% url 'support_center' %}?error={{ error.code }}">Open support ticket</a>
+      </div>
+      <p class="meta">
+        This error is registered in the 8-code campus catalog. <a href="{% url 'simulate_error' code=error.code %}" style="color: #1b5e20; text-decoration: underline; font-weight: 700;">Test real HTTP status</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

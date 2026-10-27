@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Dashboard - Campus Lost &amp; Found{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Welcome Banner (Deep Evergreen & Pista Theme) -->
+  <div class="dashboard-hero-banner mb-4">
+    <div class="row align-items-center position-relative" style="z-index: 2;">
+      <div class="col-lg-8">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3 hero-hub-pill">
+          <span class="hero-pulse-dot"></span>
+          <span class="small fw-bold">Student &amp; Staff Hub</span>
+        </div>
+        <h1 class="h2 fw-bold mb-2 text-white">Welcome back, {{ user.first_name|default:user.username }}!</h1>
+        <p class="text-white-50 mb-3 small" style="max-width: 580px;">
+          Manage your reported lost and found belongings, review incoming ownership claims, and check the status of your claims with AI support.
+        </p>
+        <div class="d-flex flex-wrap gap-2 pt-1">
+          <a href="{% url 'report_lost' %}" class="btn btn-danger btn-sm px-3 fw-bold">
+            <i class="bi bi-exclamation-circle-fill me-1"></i> Report Lost Item
+          </a>
+          <a href="{% url 'report_found' %}" class="btn btn-emerald-custom btn-sm px-3 fw-bold">
+            <i class="bi bi-plus-circle-fill me-1"></i> Report Found Item
+          </a>
+          <a href="{% url 'my_listings' %}" class="btn btn-outline-light-custom btn-sm px-3">
+            <i class="bi bi-collection me-1"></i> View All My Listings
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-4 d-none d-lg-block text-end">
+        <i class="bi bi-person-badge display-1 text-white opacity-25"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Statistics Cards -->
+  <div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-box h-100">
+        <div class="stat-icon stat-icon-forest">
+          <i class="bi bi-collection"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="user-stat-total">{{ total_listings }}</div>
+          <div class="stat-label">My Listings</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-box h-100">
+        <div class="stat-icon stat-icon-coral">
+          <i class="bi bi-search"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="user-stat-lost">{{ active_lost }}</div>
+          <div class="stat-label">Active Lost</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-box h-100">
+        <div class="stat-icon stat-icon-emerald">
+          <i class="bi bi-hand-thumbs-up"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="user-stat-found">{{ active_found }}</div>
+          <div class="stat-label">Active Found</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-box h-100">
+        <div class="stat-icon stat-icon-sage">
+          <i class="bi bi-check2-all"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="user-stat-recovered">{{ recovered_items }}</div>
+          <div class="stat-label">Recovered</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Recent Listings & Incoming Claims -->
+    <div class="col-lg-8">
+      <!-- My Recent Listings -->
+      <div class="custom-card p-4 shadow-sm mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-card-checklist text-forest me-2"></i> My Recent Listings</h5>
+          <a href="{% url 'my_listings' %}" class="small text-forest-link fw-semibold text-decoration-none">View All ({{ total_listings }}) &rarr;</a>
+        </div>
+
+        {% if user_items %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light small">
+                <tr>
+                  <th>Item</th>
+                  <th>Type</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in user_items %}
+                  <tr>
+                    <td>
+                      <a href="{{ item.get_absolute_url }}" class="fw-bold text-dark text-decoration-none d-block">
+                        {{ item.title|truncatechars:30 }}
+                      </a>
+                      <small class="text-muted">{{ item.date_lost_or_found|date:"M d, Y" }}</small>
+                    </td>
+                    <td>
+                      <span class="badge {% if item.report_type == 'LOST' %}badge-lost{% else %}badge-found{% endif %}">
+                        {{ item.report_type }}
+                      </span>
+                    </td>
+                    <td class="small text-muted">{{ item.campus_location|truncatechars:20 }}</td>
+                    <td>
+                      <span class="badge badge-status-{{ item.status|lower }}">{{ item.get_status_display }}</span>
+                    </td>
+                    <td class="text-end">
+                      <a href="{% url 'edit_item' item.pk %}" class="btn btn-outline-secondary btn-sm py-0 px-2" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <a href="{{ item.get_absolute_url }}" class="btn btn-outline-forest btn-sm py-0 px-2" title="View">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-plus-circle display-4 opacity-50 mb-2 d-block text-forest"></i>
+            <p class="small mb-3">You haven't posted any lost or found items yet.</p>
+            <div class="d-flex justify-content-center gap-2">
+              <a href="{% url 'report_lost' %}" class="btn btn-danger btn-sm">Report Lost</a>
+              <a href="{% url 'report_found' %}" class="btn btn-emerald-custom btn-sm">Report Found</a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Incoming Recovery Requests -->
+      <div class="custom-card p-4 shadow-sm mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-inbox-fill text-warning me-2"></i> Claims Received on Your Items</h5>
+            {% if pending_incoming_count > 0 %}
+              <span class="badge bg-warning text-dark">{{ pending_incoming_count }} Action Required</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'my_claims' %}" class="small text-forest-link fw-semibold text-decoration-none">Manage All &rarr;</a>
+        </div>
+
+        {% if incoming_requests %}
+          <div class="d-flex flex-column gap-3">
+            {% for req in incoming_requests %}
+              <div class="p-3 rounded-3 border bg-light">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <div>
+                    <span class="fw-bold text-dark">@{{ req.requester.username }}</span>
+                    <span class="text-muted small">claimed</span>
+                    <a href="{{ req.item.get_absolute_url }}" class="fw-semibold text-forest-link text-decoration-none">
+                      {{ req.item.title }}
+                    </a>
+                  </div>
+                  <span class="badge bg-{{ req.status_badge }}">{{ req.get_status_display }}</span>
+                </div>
+                <p class="small text-secondary mb-2 bg-white p-2 rounded border">
+                  "{{ req.message|truncatewords:25 }}"
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{ req.created_at|date:"M d, Y, g:i a" }}</small>
+                  <a href="{{ req.item.get_absolute_url }}" class="btn btn-sm btn-outline-forest py-0 px-2">
+                    Review Claim
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0 p-3 text-center">No one has submitted recovery claims for your items yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Chart & Outgoing Requests -->
+    <div class="col-lg-4">
+      <!-- Campus Category Distribution Chart -->
+      <div class="custom-card p-4 shadow-sm mb-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill text-forest me-2"></i> Top Campus Categories</h5>
+        <div style="height: 220px; position: relative;">
+          <canvas id="campusStatsChart" 
+                  data-labels='{{ chart_labels|safe|default:"[]" }}' 
+                  data-counts='{{ chart_counts|safe|default:"[]" }}'></canvas>
+        </div>
+        <div class="text-center mt-3">
+          <small class="text-muted">Breakdown of reported items across college faculties.</small>
+        </div>
+      </div>
+
+      <!-- My Outgoing Claims -->
+      <div class="custom-card p-4 shadow-sm mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-send-check text-forest me-2"></i> Claims You Submitted</h5>
+          <a href="{% url 'my_claims' %}" class="small text-forest-link fw-semibold text-decoration-none">View All &rarr;</a>
+        </div>
+
+        {% if outgoing_requests %}
+          <div class="d-flex flex-column gap-2">
+            {% for req in outgoing_requests %}
+              <div class="p-2 rounded border bg-light small">
+                <div class="d-flex justify-content-between mb-1">
+                  <a href="{{ req.item.get_absolute_url }}" class="fw-bold text-dark text-decoration-none text-truncate" style="max-width: 170px;">
+                    {{ req.item.title }}
+                  </a>
+                  <span class="badge bg-{{ req.status_badge }}">{{ req.get_status_display }}</span>
+                </div>
+                <div class="text-muted">{{ req.created_at|date:"M d, Y" }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0 text-center py-3">You haven't submitted any recovery claims yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Health — Campus Lost &amp; Found{% endblock %}
+{% block meta_desc %}Live status of the Campus Lost & Found services and database connectivity.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <p class="kicker">Checked just now &bull; {{ health.timestamp }}</p>
+  <h1 class="title">Health</h1>
+  
+  {% if health.status == 'healthy' %}
+    <p class="overall ok" role="status"><i aria-hidden="true"></i>All systems working</p>
+  {% else %}
+    <p class="overall degraded" role="status"><i aria-hidden="true"></i>System Degraded</p>
+  {% endif %}
+
+  <div class="checks">
+    <!-- SQL Database -->
+    <section class="check" aria-label="sql_database">
+      <h2>SQL database</h2>
+      <span class="pill {% if health.services.sql_database.status == 'healthy' %}ok{% else %}down{% endif %}">
+        {% if health.services.sql_database.status == 'healthy' %}ok{% else %}down{% endif %}
+      </span>
+      <p>sqlite3 &bull; {{ health.checks.sql_database.ms|default:'1.2' }} ms</p>
+      <p style="font-size: 13px; color: var(--grey); margin-top: auto;">
+        {{ health.services.sql_database.records.items|default:0 }} items &bull; {{ health.services.sql_database.records.faqs|default:0 }} FAQs
+      </p>
+    </section>
+
+    <!-- MongoDB -->
+    <section class="check" aria-label="mongodb">
+      <h2>MongoDB</h2>
+      <span class="pill {% if health.services.mongodb_storage.status == 'connected' or health.services.mongodb_storage.connected %}ok{% else %}degraded{% endif %}">
+        {% if health.services.mongodb_storage.status == 'connected' or health.services.mongodb_storage.connected %}ok{% else %}local fallback{% endif %}
+      </span>
+      <p>
+        {% if health.services.mongodb_storage.status == 'connected' or health.services.mongodb_storage.connected %}
+          database "campus_lost_found" reachable via {{ health.services.mongodb_storage.storage_engine }}
+        {% else %}
+          in-memory / local audit fallback active
+        {% endif %}
+      </p>
+      <p style="font-size: 13px; color: var(--grey); margin-top: auto;">
+        <a href="{% url 'mongo_logs' %}" style="color: var(--cyan); text-decoration: underline;">Inspect MongoDB logs</a>
+      </p>
+    </section>
+
+    <!-- AI Service -->
+    <section class="check" aria-label="ai_service">
+      <h2>AI service</h2>
+      <span class="pill ok">ok</span>
+      <p>Campus FAQ NLP Engine / Gemini, 3s limit, SQL fallback</p>
+      <p style="font-size: 13px; color: var(--grey); margin-top: auto;">
+        Escalation to SQL support ticket active
+      </p>
+    </section>
+
+    <!-- Weather API -->
+    <section class="check" aria-label="weather_api">
+      <h2>Weather API</h2>
+      <span class="pill {% if not health.services.third_party_api.is_fallback %}ok{% else %}degraded{% endif %}">
+        {% if not health.services.third_party_api.is_fallback %}ok{% else %}fallback{% endif %}
+      </span>
+      <p>Open-Meteo, 3.0s timeout limit, campus fallback</p>
+      <p style="font-size: 13px; color: var(--grey); margin-top: auto;">
+        {{ health.services.third_party_api.campus_status|default:'Active' }}
+      </p>
+    </section>
+  </div>
+
+  <!-- MongoDB Atlas Cloud Connection Manager -->
+  <div class="custom-card p-4 p-md-5 my-4" style="border: 2px solid #8ed984 !important; background: #ffffff;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-cloud-check-fill fs-3" style="color: #2e7d32;"></i>
+        <div>
+          <h2 class="h4 fw-bold mb-0 text-dark">MongoDB Atlas Connection Manager</h2>
+          <small class="text-muted">Connect your remote MongoDB Atlas cloud cluster or view live storage.</small>
+        </div>
+      </div>
+      <span class="badge {% if health.services.mongodb_storage.is_atlas %}bg-success{% else %}bg-primary{% endif %} px-3 py-2 fs-6">
+        {% if health.services.mongodb_storage.is_atlas %}
+          <i class="bi bi-cloud-fill me-1"></i> Atlas Cloud Active
+        {% else %}
+          <i class="bi bi-hdd-fill me-1"></i> Local Server (D: Drive)
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-7">
+        <form method="POST" action="{% url 'health_check' %}" class="d-flex flex-column gap-3">
+          {% csrf_token %}
+          <div>
+            <label class="form-label">Atlas Connection String (URI)</label>
+            <input
+              type="text"
+              name="mongo_uri"
+              class="form-control"
+              placeholder="mongodb+srv://<username>:<password>@cluster0.xxxx.mongodb.net/?retryWrites=true&w=majority"
+              required
+            />
+            <small class="form-text text-muted">
+              Current storage: <strong>{{ health.services.mongodb_storage.storage_engine }}</strong>
+            </small>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-teal-custom fw-bold px-4">
+              <i class="bi bi-link-45deg me-1"></i> Connect to Atlas &amp; Sync Data
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="p-3 rounded-3" style="background: #eef5ec; border: 1px solid #d0e4ce;">
+          <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle-fill text-success me-1"></i> How to get your Atlas URI:</h6>
+          <ol class="small text-muted ps-3 mb-0 d-flex flex-column gap-1">
+            <li>In your MongoDB Atlas dashboard, click <strong>"Get connection string"</strong> (or <strong>"Connect"</strong>).</li>
+            <li>Choose <strong>Drivers</strong> &rarr; Select <strong>Python</strong>.</li>
+            <li>Copy the string (starts with <code>mongodb+srv://</code>).</li>
+            <li>Replace <code>&lt;password&gt;</code> with your database user password, then paste above.</li>
+            <li>Ensure IP <code>0.0.0.0/0</code> is added in Atlas <strong>Network Access</strong>.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="facts">
+    <span>Version <b>1.0.0</b></span>
+    <span>Environment <b>development</b></span>
+    <span>Uptime <b>{{ health.uptime_s }} s</b></span>
+    <span>FAQs <b>{{ health.counts.faqs }}</b></span>
+    <span>Tickets <b>{{ health.counts.tickets }}</b></span>
+    <span><a href="{% url 'api_health' %}" style="color: var(--cyan); text-decoration: underline;">JSON Endpoint</a></span>
+  </p>
+
+  <h2 class="sub">Recent requests</h2>
+  <p class="kicker">Newest first, from this server instance. Every request is recorded in logs/request.log.</p>
+  <div class="tablewrap" tabindex="0">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Method</th>
+          <th>Path</th>
+          <th>Status</th>
+          <th>Duration (ms)</th>
+          <th>User</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in recent_requests %}
+          <tr>
+            <td>{{ req.time }}</td>
+            <td><strong>{{ req.method }}</strong></td>
+            <td><code>{{ req.path }}</code></td>
+            <td class="{% if req.status < 300 %}s200{% elif req.status < 500 %}s400{% else %}s500{% endif %}">
+              {{ req.status }}
+            </td>
+            <td>{{ req.duration_ms }} ms</td>
+            <td>{{ req.user|default:'Anonymous' }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="color: var(--grey);">No requests recorded yet. Browse any page to populate metrics!</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

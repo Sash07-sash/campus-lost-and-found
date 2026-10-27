@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}401 Unauthorized - Campus Lost &amp; Found{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="custom-card p-5 shadow-lg border-0">
+        <div class="display-1 fw-bold text-info mb-2">401</div>
+        <div class="badge bg-info text-dark fs-6 px-3 py-2 mb-3">Authentication Required</div>
+        <h2 class="h3 fw-bold text-dark mb-3">Please Sign In to Access This Page</h2>
+        <p class="text-secondary mb-4">
+          Reporting lost belongings, submitting ownership claims, and reviewing incoming claims require active college credentials.
+        </p>
+
+        <div class="p-4 bg-light rounded-4 border mb-4 text-start">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stat-icon bg-info text-white rounded-circle fs-3" style="width: 50px; height: 50px;">
+              <i class="bi bi-person-lock"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1 text-dark">Questions about campus accounts?</h6>
+              <p class="text-muted small mb-0">Ask our AI Assistant about password resets, registration, and user access permissions.</p>
+            </div>
+          </div>
+          <div class="mt-3 text-end">
+            <button type="button" class="btn btn-info btn-sm fw-bold px-3 text-dark" onclick="openAssistantWithError('401')">
+              <i class="bi bi-chat-dots-fill me-1"></i> Ask Assistant about Error 401
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary-custom px-4 fw-bold">Sign In Now</a>
+          <a href="{% url 'register' %}" class="btn btn-outline-primary px-3">Create Account</a>
+          <a href="{% url 'home' %}" class="btn btn-outline-secondary px-3">Return Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

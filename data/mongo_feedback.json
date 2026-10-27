@@ -1,0 +1,87 @@
+[
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T11:32:21.124001",
+    "_id": "6ae08bc53324a900433e2e8f",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T11:26:33.713019",
+    "_id": "6ae08a6af60748edca4fafa3",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T11:25:09.781521",
+    "_id": "6ae08a16fc0c3d488a5f9922",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T10:33:13.005700",
+    "_id": "6ae07de97ce87b5cf7d61f51",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T10:29:17.539698",
+    "_id": "6ae07cff3e19fd7210c05ae1",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T10:10:54.032857",
+    "_id": "6ae078ae36de4c7d3a07d2cc",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T09:54:22.477690",
+    "_id": "6ae074ceacb71a146fa43017",
+    "storage": "mongodb_live"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T09:28:59.135529",
+    "_id": "6ae06edb868058a221dc606f",
+    "storage": "mongodb"
+  },
+  {
+    "session_id": "test_sess_123",
+    "rating": 5,
+    "comment": "Extremely helpful AI assistant",
+    "timestamp": "2026-10-27T07:49:30.216320",
+    "storage": "local_fallback"
+  },
+  {
+    "session_id": "sess_99c7988569c2",
+    "rating": 5,
+    "comment": "Excellent assistance!",
+    "timestamp": "2026-10-27T07:48:49.797706",
+    "storage": "local_fallback"
+  },
+  {
+    "session_id": "sess-100",
+    "rating": 5,
+    "comment": "Great!",
+    "timestamp": "2026-10-27T07:46:41.108016",
+    "storage": "local_fallback"
+  }
+]

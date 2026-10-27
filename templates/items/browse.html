@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Browse Listings — Campus Lost &amp; Found{% endblock %}
+{% block meta_desc %}Search and filter through all reported items across college classrooms, labs, hostels, and grounds.{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page" style="align-items: start;">
+    <div>
+      <p class="kicker">{{ paginator.count }} items indexed in campus database</p>
+      <h1 class="title">Browse</h1>
+    </div>
+    <div>
+      <p class="lede">
+        Search and filter through all reported items across college classrooms, libraries, cafeterias, labs, and sports arenas.
+      </p>
+      <div class="actions">
+        <a class="btn btn-pink btn-sm" href="{% url 'report_lost' %}">
+          <span class="ms" aria-hidden="true">report</span> Report Lost
+        </a>
+        <a class="btn btn-cyan btn-sm" href="{% url 'report_found' %}">
+          <span class="ms" aria-hidden="true">add_circle</span> Report Found
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Form -->
+  <form method="GET" action="{% url 'browse' %}" style="margin-top: 36px; border-top: 1px solid var(--rule); padding-top: 28px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: end;">
+      <label class="field" style="margin-bottom: 0;">
+        <span>Keyword</span>
+        <input type="text" name="q" value="{{ query }}" placeholder="Calculator, ID card, bottle..." />
+      </label>
+
+      <label class="field" style="margin-bottom: 0;">
+        <span>Type</span>
+        <select name="type">
+          <option value="">All Types (Lost &amp; Found)</option>
+          <option value="LOST" {% if report_type == 'LOST' %}selected{% endif %}>Lost Belongings</option>
+          <option value="FOUND" {% if report_type == 'FOUND' %}selected{% endif %}>Found Items</option>
+        </select>
+      </label>
+
+      <label class="field" style="margin-bottom: 0;">
+        <span>Category</span>
+        <select name="category">
+          <option value="">All Categories</option>
+          {% for code, label in categories %}
+            <option value="{{ code }}" {% if category == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="field" style="margin-bottom: 0;">
+        <span>Location</span>
+        <input type="text" name="location" value="{{ location }}" placeholder="Library, Canteen, Block A" />
+      </label>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-sm" type="submit" style="flex: 1;">
+          <span class="ms" aria-hidden="true">search</span> Filter
+        </button>
+        {% if query or report_type or category or location or status or date_from or date_to %}
+          <a href="{% url 'browse' %}" class="btn btn-sm btn-outline" title="Clear all filters">
+            <span class="ms">close</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+
+  <!-- Items Grid -->
+  <div class="items-grid">
+    {% for item in page_obj %}
+      <article class="item-card">
+        <div class="item-card-media">
+          {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy" />
+          {% else %}
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--grey);">
+              <span class="ms" style="font-size: 48px;">image_not_supported</span>
+              <span style="font-size: 13px;">No photo provided</span>
+            </div>
+          {% endif %}
+          <span class="item-type-badge {% if item.report_type == 'LOST' %}lost{% else %}found{% endif %}">
+            {{ item.get_report_type_display }}
+          </span>
+        </div>
+        <div class="item-card-body">
+          <span class="item-card-category">{{ item.get_category_display }}</span>
+          <h3 class="item-card-title">{{ item.title }}</h3>
+          <div class="item-card-meta">
+            <span><span class="ms" style="font-size: 16px;">location_on</span> {{ item.campus_location }}</span>
+            <span><span class="ms" style="font-size: 16px;">schedule</span> {{ item.date_lost_or_found|date:"M d, Y" }}</span>
+          </div>
+          <p style="font-size: 15px; color: var(--text2); line-height: 1.4; margin-bottom: 20px; flex: 1;">
+            {{ item.description|truncatewords:20 }}
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <a href="{% url 'item_detail' pk=item.pk %}" class="btn btn-sm" style="flex: 1; background: #fff; color: #000;">
+              View Details
+            </a>
+            {% if item.report_type == 'FOUND' and user != item.created_by %}
+              <a href="{% url 'item_detail' pk=item.pk %}#claim-section" class="btn btn-sm btn-cyan" style="padding: 0 16px;" title="Claim this item">
+                Claim
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+    {% empty %}
+      <div style="grid-column: 1 / -1; padding: 64px 24px; border: 1px solid var(--rule); text-align: center; border-radius: 8px;">
+        <h3 style="font-family: 'Anton', Impact, sans-serif; font-size: 32px; color: var(--grey);">No Listings Matched Your Filters</h3>
+        <p style="color: var(--text2); font-size: 16px; margin: 12px 0 24px;">Try loosening your keywords or clearing category filters.</p>
+        <a href="{% url 'browse' %}" class="btn btn-sm btn-outline">Reset All Filters</a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+    <div style="margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <span style="font-size: 15px; color: var(--grey);">
+        Page <b>{{ page_obj.number }}</b> of <b>{{ page_obj.paginator.num_pages }}</b>
+      </span>
+      <div style="display: flex; gap: 8px;">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if report_type %}&type={{ report_type }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if location %}&location={{ location }}{% endif %}" class="btn btn-sm btn-outline">
+            &larr; Previous
+          </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if report_type %}&type={{ report_type }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if location %}&location={{ location }}{% endif %}" class="btn btn-sm btn-outline">
+            Next &rarr;
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

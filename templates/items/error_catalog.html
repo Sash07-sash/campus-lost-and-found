@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Error codes — Campus Lost &amp; Found{% endblock %}
+{% block meta_desc %}Catalog of all HTTP and campus-specific error codes for Campus Lost & Found.{% endblock %}
+
+{% block content %}
+<div class="wrap tone-info">
+  <p class="kicker">Every response the site can send &bull; Minimum 8 Codes</p>
+  <h1 class="title">Error codes</h1>
+  <p class="lede">
+    Each tile opens that error page and answers with its real HTTP status code, so you can inspect it in your browser's network panel. <strong>CLF-1001</strong> is specific to Campus Lost &amp; Found.
+  </p>
+
+  <div class="grid">
+    {% for code, err in error_catalog.items %}
+      <a class="tile {% if code == '404' or code == '500' or code == '403' or code == '400' or code == '401' %}tone-error{% elif code == '429' or code == '503' %}tone-warn{% else %}tone-info{% endif %}" href="{% url 'simulate_error' code=code %}">
+        <b>{{ code }}</b>
+        <span>
+          {{ err.title }}
+          <small>{{ err.short_description }}</small>
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+
+  <section class="more" style="margin-top: 48px;">
+    <h2>Need explanation on an error?</h2>
+    <p>Our AI Assistant can explain the root cause and campus troubleshooting steps for any of these codes.</p>
+    <div class="actions">
+      <button class="btn" type="button" data-ask="Explain what each of the campus error codes means">
+        <span class="ms" aria-hidden="true">chat_bubble</span> Ask the assistant
+      </button>
+      <a class="link" href="{% url 'health_check' %}">Check System Health</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

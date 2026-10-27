@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 · Not found — Campus Lost &amp; Found{% endblock %}
+
+{% block content %}
+<div class="wrap tone-error">
+  <div class="page">
+    <h2 class="code" aria-label="Error 404">404</h2>
+    <div>
+      <div class="shapes" aria-hidden="true">
+        <svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="26" fill="var(--tone)" /></svg>
+        <svg viewBox="0 0 56 56"><path d="M2 40a26 26 0 0 1 52 0Z" fill="var(--tone)" /></svg>
+        <svg viewBox="0 0 56 56"><path d="M28 2l26 50H2Z" fill="var(--tone)" /></svg>
+      </div>
+      <p class="kicker">404 &bull; Not found</p>
+      <h1 class="headline">No item here.</h1>
+      <p class="message">The page or item you asked for does not exist, or it has been removed after being recovered.</p>
+      <p class="help">
+        <strong>Why it happens:</strong> The address has a typo, or the listing was closed by its owner.<br />
+        <strong>What to do:</strong> Check the address, browse active campus listings, or ask our AI assistant.
+      </p>
+      <div class="actions">
+        <a class="btn" href="{% url 'home' %}">
+          <span class="ms" aria-hidden="true">arrow_back</span>Back to Home
+        </a>
+        <button class="btn" type="button" data-ask="What does error 404 mean and what should I do?">
+          <span class="ms" aria-hidden="true">chat_bubble</span>Ask the Assistant
+        </button>
+        <button class="link" type="button" onclick="location.reload()">
+          <span class="ms" aria-hidden="true">refresh</span>Try again
+        </button>
+      </div>
+      <p class="meta">
+        This page was served with HTTP status 404. <a href="{% url 'error_catalog' %}" style="text-decoration: underline; color: inherit; font-weight: 700;">See all 8 error codes</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
