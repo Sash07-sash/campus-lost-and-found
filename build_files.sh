@@ -19,7 +19,12 @@ echo "Using Python: $PY_EXEC"
 $PY_EXEC --version || true
 
 echo "Installing project dependencies..."
-$PY_EXEC -m pip install -r requirements.txt
+if command -v uv >/dev/null 2>&1; then
+  echo "Using uv to install packages into system environment..."
+  uv pip install -r requirements.txt --system
+else
+  $PY_EXEC -m pip install -r requirements.txt --break-system-packages || $PY_EXEC -m pip install -r requirements.txt
+fi
 
 echo "Collecting static assets..."
 $PY_EXEC manage.py collectstatic --noinput --clear || true
