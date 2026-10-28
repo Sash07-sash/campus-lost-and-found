@@ -5,12 +5,12 @@ echo "--- Starting Vercel Build ---"
 mkdir -p staticfiles
 
 # Detect Python interpreter
-if command -v python3 >/dev/null 2>&1; then
+if command -v python3.12 >/dev/null 2>&1; then
+  PY_EXEC="python3.12"
+elif command -v python3 >/dev/null 2>&1; then
   PY_EXEC="python3"
 elif command -v python >/dev/null 2>&1; then
   PY_EXEC="python"
-elif command -v python3.11 >/dev/null 2>&1; then
-  PY_EXEC="python3.11"
 else
   PY_EXEC="python3"
 fi
@@ -21,7 +21,7 @@ $PY_EXEC --version || true
 echo "Installing project dependencies..."
 if command -v uv >/dev/null 2>&1; then
   echo "Using uv to install packages into system environment..."
-  uv pip install -r requirements.txt --system
+  uv pip install -r requirements.txt --system || uv pip install -r requirements.txt
 else
   $PY_EXEC -m pip install -r requirements.txt --break-system-packages || $PY_EXEC -m pip install -r requirements.txt
 fi
