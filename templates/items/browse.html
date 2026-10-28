@@ -99,7 +99,7 @@
             {{ item.description|truncatewords:20 }}
           </p>
           <div style="display: flex; gap: 8px;">
-            <a href="{% url 'item_detail' pk=item.pk %}" class="btn btn-sm" style="flex: 1; background: #fff; color: #000;">
+            <a href="{% url 'item_detail' pk=item.pk %}" class="btn btn-sm btn-outline" style="flex: 1;">
               View Details
             </a>
             {% if item.report_type == 'FOUND' and user != item.created_by %}

@@ -20,11 +20,23 @@
   "routes": [
     {
       "src": "/static/(.*)",
-      "dest": "/static/$1"
+      "dest": "/static/$1",
+      "check": true
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/$1",
+      "check": true
     },
     {
       "src": "/media/(.*)",
-      "dest": "/media/$1"
+      "dest": "/media/$1",
+      "check": true
+    },
+    {
+      "src": "/media/(.*)",
+      "dest": "/static/media/$1",
+      "check": true
     },
     {
       "src": "/(.*)",

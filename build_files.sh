@@ -36,8 +36,16 @@ $PY_EXEC -c "import django; print('Django version successfully loaded:', django.
 echo "Collecting static assets..."
 $PY_EXEC manage.py collectstatic --noinput --clear || true
 
-echo "Ensuring media assets are bundled in staticfiles/media..."
+echo "Ensuring staticfiles/static mirror exists for Vercel static routing..."
+mkdir -p staticfiles/static
+cp -r staticfiles/css staticfiles/static/ 2>/dev/null || true
+cp -r staticfiles/js staticfiles/static/ 2>/dev/null || true
+cp -r staticfiles/admin staticfiles/static/ 2>/dev/null || true
+
+echo "Ensuring media assets are bundled in staticfiles/media and staticfiles/static/media..."
 mkdir -p staticfiles/media
+mkdir -p staticfiles/static/media
 cp -r media/* staticfiles/media/ 2>/dev/null || true
+cp -r media/* staticfiles/static/media/ 2>/dev/null || true
 
 echo "--- Vercel Build Finished Successfully ---"

@@ -5,6 +5,9 @@
  */
 
 (function () {
+  if (window.__clf_assistant_loaded) return;
+  window.__clf_assistant_loaded = true;
+
   const SESSION_KEY = 'clf_assistant_session';
   let sessionId = sessionStorage.getItem(SESSION_KEY);
   if (!sessionId) {
