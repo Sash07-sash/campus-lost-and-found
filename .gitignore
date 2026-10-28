@@ -18,9 +18,6 @@ venv.bak/
 .env
 local_settings.py
 
-# Static collected
-staticfiles/
-
 # Logs
 *.log
 logs/
