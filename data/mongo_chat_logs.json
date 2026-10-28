@@ -1,5 +1,49 @@
 [
   {
+    "session_id": "test_sess_123",
+    "user": "Student",
+    "user_message": "Explain error CLF-1001",
+    "ai_response": "\u26a0\ufe0f **Error CLF-1001: Item Report Processing Failure**\n\nThis custom campus code indicates that an uploaded photo failed validation (exceeded 5MB limit, corrupt file, or unsupported format like PDF/EXE instead of JPG/PNG/WEBP).\n\n**Campus Troubleshooting Steps:**\n\u2022 Ensure the uploaded photo is under 5MB in file size.\n\u2022 Convert the image to JPG, PNG, or WEBP format before uploading.\n\u2022 Try submitting the listing without an image first, then add it later.\n\n*If this error persists, you can submit a support ticket below!*",
+    "matched_faq_id": null,
+    "error_code": "CLF-1001",
+    "timestamp": "2026-10-28T05:20:27.369196",
+    "_id": "6ae1861b4199865874d841a3",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "sess_8e0d8a2b23f1",
+    "user": "Student",
+    "user_message": "What does error 404 mean?",
+    "ai_response": "\u26a0\ufe0f **Error 404: Page or Item Not Found**\n\nThe listing you are trying to view may have been removed by the owner, marked as recovered, or the URL address contains a typo.\n\n**Campus Troubleshooting Steps:**\n\u2022 Double-check the web address or item ID number.\n\u2022 Use the Browse Listings page to search for the item by title or location.\n\u2022 Ask the AI Assistant in the bottom right corner for help locating the item.\n\n*If this error persists, you can submit a support ticket below!*",
+    "matched_faq_id": null,
+    "error_code": "404",
+    "timestamp": "2026-10-28T05:20:26.233647",
+    "_id": "6ae1861a4199865874d841a0",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "sess_09a5dcf92b6e",
+    "user": "Student",
+    "user_message": "What is the quantum mechanics textbook room number in Mars?",
+    "ai_response": "Hello! It sounds like you might be looking for a lost textbook in the Mars Science Building; I recommend checking the main Lost & Found desk in the lobby or the library's circulation desk first. Please bring your student ID for safety verification when you visit, as they'll need to confirm the item belongs to you before handing it over. If you can't find it there, feel free to stop by Campus Security, and they\u2019ll be happy to help you check their logs!\n\n*(Answered by Google Gemini AI - gemini-3.1-flash-lite)*",
+    "matched_faq_id": null,
+    "error_code": null,
+    "timestamp": "2026-10-28T05:20:24.728059",
+    "_id": "6ae186194199865874d8419d",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "session_id": "sess_ad2ed3192e8e",
+    "user": "Student",
+    "user_message": "How do I report a lost calculator?",
+    "ai_response": "**How do I report a lost calculator?**\n\nNavigate to Report Lost Item, select Books and Calculators category, and submit.\n\n*(Category: Reporting Lost & Found)*",
+    "matched_faq_id": 1,
+    "error_code": null,
+    "timestamp": "2026-10-28T05:20:20.689815",
+    "_id": "6ae186154199865874d8419a",
+    "storage": "mongodb_atlas"
+  },
+  {
     "session_id": "clf_sess_rtdx8qpdgx",
     "user": "satheesh@0908...",
     "user_message": "i lost my idcard in library , can you check if someone found it or not",

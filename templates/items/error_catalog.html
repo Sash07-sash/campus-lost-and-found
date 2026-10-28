@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="wrap tone-info">
-  <p class="kicker">Every response the site can send &bull; Minimum 8 Codes</p>
+  <p class="kicker">Every response the site can send &bull; {{ error_catalog|length }} Codes in SQL &bull; <a href="{% url 'api_errors' %}" target="_blank" style="color: inherit; text-decoration: underline; font-weight: 700;">Live REST API: /api/errors/</a></p>
   <h1 class="title">Error codes</h1>
   <p class="lede">
     Each tile opens that error page and answers with its real HTTP status code, so you can inspect it in your browser's network panel. <strong>CLF-1001</strong> is specific to Campus Lost &amp; Found.

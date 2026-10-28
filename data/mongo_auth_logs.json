@@ -8,6 +8,32 @@
     "ip_address": "127.0.0.1",
     "user_agent": "Unknown",
     "error": "",
+    "timestamp": "2026-10-28T05:21:37.575501",
+    "_id": "6ae186624199865874d841b5",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "event": "LOGOUT",
+    "status": "LOGOUT",
+    "username": "john_doe",
+    "email": "",
+    "identifier": "john_doe",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Unknown",
+    "error": "",
+    "timestamp": "2026-10-28T05:21:34.838452",
+    "_id": "6ae1865f4199865874d841b2",
+    "storage": "mongodb_atlas"
+  },
+  {
+    "event": "REGISTER_SUCCESS",
+    "status": "LOGOUT",
+    "username": "student123",
+    "email": "alex@campus.edu",
+    "identifier": "student123",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Unknown",
+    "error": "",
     "timestamp": "2026-10-27T11:33:49.285678",
     "_id": "6ae08c1d3324a900433e2e9e",
     "storage": "mongodb_atlas"

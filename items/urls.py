@@ -35,6 +35,8 @@ urlpatterns = [
     path('faq/', views.faqs_view, name='faq_alias'),
     path('support/', views.support_center, name='support_center'),
     path('support/tickets/', views.my_support_tickets, name='my_support_tickets'),
+    path('support/tickets/<str:ticket_number>/update/', views.ticket_update_view, name='ticket_update'),
+    path('support/tickets/<str:ticket_number>/delete/', views.ticket_delete_view, name='ticket_delete'),
     path('support/mongo-logs/', views.mongo_logs_view, name='mongo_logs'),
     path('mongo-logs/', views.mongo_logs_view, name='mongo_logs_alias'),
     path('errors/', views.error_catalog_view, name='error_catalog'),
@@ -50,7 +52,10 @@ urlpatterns = [
     path('api/chat/feedback/', views.chat_feedback_api, name='chat_feedback_api'),
     path('api/health/', views.health_check, name='api_health'),
     path('api/faqs/', views.api_faqs, name='api_faqs'),
+    path('api/errors/', views.api_errors, name='api_errors'),
     path('api/tickets/lookup/', views.ticket_lookup_api, name='ticket_lookup_api'),
     path('api/tickets/email/', views.ticket_email_api, name='ticket_email_api'),
+    path('api/tickets/', views.api_ticket_crud, name='api_ticket_crud_list'),
+    path('api/tickets/<str:ticket_number>/', views.api_ticket_crud, name='api_ticket_crud'),
 ]
 

@@ -453,8 +453,8 @@ class RecoveryRequestTests(TestCase):
 # Assessment Requirements Test Suites
 # ==============================================================================
 
-from .models import FAQ, SupportTicket
-from .error_codes import ERROR_CATALOG
+from .models import FAQ, SupportTicket, ErrorCode
+from .error_codes import ERROR_CATALOG, get_all_error_codes
 from .ai_assistant import generate_ai_response
 from .third_party_api import get_campus_weather_and_status
 
@@ -609,4 +609,93 @@ class AssessmentHealthAndThirdPartyTests(TestCase):
         data = get_campus_weather_and_status()
         self.assertIn('temperature', data)
         self.assertIn('campus_status', data)
+
+
+import json
+
+
+class AssessmentRubricExtendedTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='test_student_rubric', password='Password123!', email='rubric@campus.edu')
+        
+        # Seed 8 ErrorCodes into SQL
+        import json
+        for code, info in ERROR_CATALOG.items():
+            ErrorCode.objects.update_or_create(
+                code=code,
+                defaults={
+                    'title': info['title'],
+                    'category': info['category'],
+                    'summary': info['summary'],
+                    'student_explanation': info['student_explanation'],
+                    'campus_troubleshooting': json.dumps(info['campus_troubleshooting']),
+                    'http_status': info['http_status'],
+                    'is_active': True,
+                }
+            )
+
+    def test_eight_error_codes_stored_in_sql(self):
+        """Assessment Col F: 8+ error codes in SQL."""
+        count = ErrorCode.objects.filter(is_active=True).count()
+        self.assertGreaterEqual(count, 8)
+        # Verify 404 and CLF-1001 exist in SQL
+        self.assertTrue(ErrorCode.objects.filter(code='404').exists())
+        self.assertTrue(ErrorCode.objects.filter(code='CLF-1001').exists())
+
+    def test_api_errors_endpoint(self):
+        """Verify /api/errors/ returns 8+ error codes."""
+        resp = self.client.get(reverse('api_errors'))
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertGreaterEqual(data['count'], 8)
+        self.assertEqual(data['source'], 'SQL (items_errorcode)')
+
+    def test_faq_api_endpoint(self):
+        """Assessment Col E: FAQ page from API."""
+        resp = self.client.get(reverse('api_faqs'))
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn('faqs', data)
+        self.assertIn('count', data)
+
+    def test_ticket_crud_workflow(self):
+        """Assessment Col I: Ticket created when unsure (CRUD)."""
+        # 1. CREATE via REST API
+        post_resp = self.client.post(
+            reverse('api_ticket_crud_list'),
+            data=json.dumps({
+                'subject': 'CRUD Test Ticket',
+                'message': 'Testing full CRUD workflow',
+                'contact_email': 'rubric@campus.edu',
+                'priority': 'HIGH'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(post_resp.status_code, 201)
+        created_data = post_resp.json()
+        tkt_ref = created_data['ticket_number']
+        self.assertTrue(tkt_ref.startswith('TKT-'))
+
+        # 2. READ via REST API
+        get_resp = self.client.get(reverse('api_ticket_crud', kwargs={'ticket_number': tkt_ref}))
+        self.assertEqual(get_resp.status_code, 200)
+        self.assertEqual(get_resp.json()['subject'], 'CRUD Test Ticket')
+
+        # 3. UPDATE via REST API
+        patch_resp = self.client.patch(
+            reverse('api_ticket_crud', kwargs={'ticket_number': tkt_ref}),
+            data=json.dumps({'message': 'Updated message details'}),
+            content_type='application/json'
+        )
+        self.assertEqual(patch_resp.status_code, 200)
+        updated_ticket = SupportTicket.objects.get(ticket_number=tkt_ref)
+        self.assertEqual(updated_ticket.message, 'Updated message details')
+
+        # 4. DELETE / CLOSE via REST API
+        del_resp = self.client.delete(reverse('api_ticket_crud', kwargs={'ticket_number': tkt_ref}))
+        self.assertEqual(del_resp.status_code, 200)
+        closed_ticket = SupportTicket.objects.get(ticket_number=tkt_ref)
+        self.assertEqual(closed_ticket.status, 'CLOSED')
+
 

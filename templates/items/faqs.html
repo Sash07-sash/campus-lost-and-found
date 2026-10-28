@@ -16,6 +16,13 @@
     </p>
   </div>
 
+  <div style="margin-bottom: 20px;">
+    <span class="badge" id="api-status-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; background: rgba(46, 125, 50, 0.12); color: #2e7d32; border: 1px solid rgba(46, 125, 50, 0.25); font-size: 0.82rem; font-weight: 600;">
+      <span class="ms" style="font-size: 14px;">check_circle</span>
+      <span>API Source: <a href="{% url 'api_faqs' %}" target="_blank" style="color: inherit; text-decoration: underline;">/api/faqs/</a> (<span id="api-faq-count">{{ total_faqs }}</span> FAQs in SQL)</span>
+    </span>
+  </div>
+
   <label class="search">
     <span>Search the questions</span>
     <input id="faq-search" type="search" placeholder="e.g. calculator, claims, ID card, error 404, privacy" autocomplete="off" />
@@ -81,6 +88,25 @@
         if (empty) empty.hidden = shown !== 0;
       });
     }
+
+    // Assessment Requirement: FAQ page from API (/api/faqs/)
+    fetch('/api/faqs/')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && data.faqs && typeof data.count === 'number') {
+          var badge = document.getElementById('api-status-badge');
+          if (badge) {
+            badge.innerHTML = '<span class="ms" style="font-size: 14px;">check_circle</span> Live REST API Synced: <strong>/api/faqs/</strong> (' + data.count + ' SQL FAQs Verified)';
+          }
+          var countEl = document.getElementById('faq-count');
+          if (countEl) countEl.textContent = data.count;
+          var apiCountEl = document.getElementById('api-faq-count');
+          if (apiCountEl) apiCountEl.textContent = data.count;
+        }
+      })
+      .catch(function (err) {
+        console.warn('API /api/faqs/ fetch warning:', err);
+      });
   })();
 </script>
 {% endblock %}

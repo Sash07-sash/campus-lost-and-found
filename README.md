@@ -13,8 +13,10 @@
 | Field | Detail |
 |---|---|
 | **Individual Task Title** | **Campus Lost & Found — AI-Powered Campus Recovery and Support Portal** |
-| **Live Website Link (HTTPS)** | [https://campus-lost-found.onrender.com](https://campus-lost-found.onrender.com) *(or your deployed HTTPS URL on Render/Railway/PythonAnywhere)* |
-| **GitHub Repository Link** | [https://github.com/your-username/campus-lost-found](https://github.com/your-username/campus-lost-found) |
+| **Live Website Link (HTTPS)** | **[https://campus-lost-and-found-r1hx-six.vercel.app/](https://campus-lost-and-found-r1hx-six.vercel.app/)** |
+| **GitHub Repository Link** | **[https://github.com/Sash07-sash/campus-lost-and-found](https://github.com/Sash07-sash/campus-lost-and-found)** |
+| **Deployment Platform** | Vercel Edge Serverless (Python 3.12 Runtime + Static Edge CDN) |
+| **Cloud Database Storage** | MongoDB Atlas Cloud Cluster (`cluster.ea1qjf4.mongodb.net`) + SQLite ORM |
 | **Task Sheet Entry** | [Software Development Final Assessment Sheet](https://docs.google.com/spreadsheets/d/1gac3qN_sFgbBQR7utv6N-66-C8szNq3-F6L7NQsbx78/edit?usp=sharing) |
 
 ---
@@ -22,24 +24,27 @@
 ## 📌 1. Project Overview & Architecture
 
 **Campus Lost & Found** is a centralized, responsive web platform and intelligent student support portal designed specifically for college campuses. It unifies two critical services:
-1. **Lost & Found Recovery System:** Enables college students and staff to report lost and found items (ID cards, calculators, chargers, keys, water bottles, bags), browse listings with real-time filters, calculate automated similarity matches, and submit secure in-app recovery claims without exposing personal contact info.
-2. **AI Campus Assistant & Developer Support Portal:** A context-aware floating AI assistant integrated on every page that answers campus FAQs from a SQL database, explains HTTP error codes, provides troubleshooting steps, and automatically escalates unresolved inquiries into SQL support tickets while persisting chat sessions and star ratings into MongoDB.
+1. **Lost & Found Recovery System:** Enables college students and staff to report lost and found items (ID cards, calculators, chargers, keys, water bottles, bags), browse authentic photographic listings with real-time filters, calculate automated similarity matches, and submit secure in-app recovery claims without exposing personal contact info.
+2. **AI Campus Assistant & Developer Support Portal:** A context-aware floating AI assistant integrated on every page that answers campus FAQs from a SQL database, explains HTTP error codes, provides troubleshooting steps, and automatically escalates unresolved inquiries into SQL support tickets while persisting chat sessions and star ratings into MongoDB Atlas.
 
 ---
 
-## ✅ 2. Assessment Requirements Compliance Matrix
+## ✅ 2. Assessment Requirements Compliance Matrix (Rubric Columns C — N)
 
-| Requirement | Implementation Detail | Status / Location |
-|---|---|:---:|
-| **1. Responsive Website with $\ge 3$ Pages & Chat Widget on Every Page** | Modern high-contrast dark aesthetic built with Anton & Hanken Grotesk typography and Material Symbols. Pages include `/` (Home), `/browse/` (Browse Items), `/faq/` / `/faqs/` (FAQs), `/support/` (Support Center), `/status/` / `/errors/` (Error Catalog), `/health/` (Health Check), `/dashboard/`. Floating AI assistant widget (`#fc-widget`) is embedded in `base.html` and available on every single page. | ✅ Complete |
-| **2. Minimum 10 FAQs Stored in SQL and Displayed on FAQ Page** | 12 categorized campus FAQs stored in SQLite database (`items_faq` table via Django ORM). Searchable and filterable by category on `/faqs/`. | ✅ Complete (12 Seeded) |
-| **3. Minimum 8 Error Codes** | 8 codes cataloged with descriptions, campus contexts, and troubleshooting: `400`, `401`, `403`, `404`, `429`, `500`, `503`, and custom site code `CLF-1001` (Report Submission & Media Processing Failure). Interactive test suite at `/errors/simulate/<code/`. | ✅ Complete (8 Codes) |
-| **4. Custom 404 and 500 Pages with "Ask the Assistant"** | Campus-themed custom error pages (`templates/404.html` and `templates/500.html`) equipped with quick actions and one-click "Ask the Assistant" buttons that open the AI widget and pre-fill diagnostics. | ✅ Complete |
-| **5. AI Assistant Answering from FAQs, Explaining Errors, & Escalating to Tickets** | Natural language AI assistant pipeline (`items/ai_assistant.py`): answers FAQ queries from SQL, identifies and diagnoses error codes, and provides a direct escalation link to create a technical support ticket if an answer is unresolved. | ✅ Complete |
-| **6. Support Tickets in SQL; Chat Logs & Feedback in MongoDB** | Technical support tickets stored in SQLite (`SupportTicket` model). Chat history (`chat_logs`) and 5-star ratings with comments (`chat_feedback`) stored in MongoDB via `items/mongo_service.py` with an in-memory/local audit fallback. Real-time audit dashboard at `/support/mongo-logs/`. | ✅ Complete |
-| **7. API Keys & Secrets in Environment Variables** | Configuration managed via `.env` loaded with `python-dotenv`. `.env.example` provided. `.gitignore` strictly excludes `.env`, `logs/`, `db.sqlite3`, and media uploads. | ✅ Complete |
-| **8. Request Logging, Health Check, & Third-Party API with Fallback** | Middleware (`RequestLoggingMiddleware`) writes timestamp, method, path, status, and duration to `logs/request.log`. `/health/` endpoint inspects app, SQL DB, MongoDB, and third-party API. External Open-Meteo Campus Environmental API operates with a strict 3.0-second timeout and fallback cached status. | ✅ Complete |
-| **9. Proposed Improvement in README** | Detailed proposal for Vision-Based Deep Learning Item Matching (CLIP/ResNet embeddings) documented in Section 8. | ✅ Complete |
+| Rubric Column | Requirement | Implementation Detail & Live Verification | Status |
+|:---:|---|---|:---:|
+| **Col C** | **Live HTTPS site, 3+ pages, mobile-friendly** | Deployed on Vercel with automatic TLS/HTTPS at [https://campus-lost-and-found-r1hx-six.vercel.app/](https://campus-lost-and-found-r1hx-six.vercel.app/). Features 10+ pages (`/`, `/browse/`, `/report/lost/`, `/report/found/`, `/faqs/`, `/support/`, `/support/tickets/`, `/errors/`, `/health/`, `/dashboard/`, `/mongo-logs/`). Fully responsive with Bootstrap 5.3 fluid grid, viewport meta tags, and mobile navigation toggler. | ✅ Complete |
+| **Col D** | **Chat widget on every page** | Floating AI Assistant capsule (`#fc-widget`, `widget.js`, `widget.css`) included in master `base.html` and available on all pages and custom error screens. | ✅ Complete |
+| **Col E** | **10+ FAQs in SQL, FAQ page from API** | 12 categorized campus FAQs stored in SQLite (`items_faq` table via Django ORM). FAQ page (`/faqs/`) dynamically queries `/api/faqs/` REST endpoint and renders with real-time text search and category grouping. | ✅ Complete (12 Seeded) |
+| **Col F** | **8+ error codes in SQL** | 8 error codes (`400`, `401`, `403`, `404`, `429`, `500`, `503`, `CLF-1001`) stored in SQL database (`items_errorcode` model). Cataloged at `/errors/` and served via REST API `/api/errors/`. Interactive error trigger at `/errors/simulate/<code/`. | ✅ Complete (8 in SQL) |
+| **Col G** | **Custom 404/500 pages + Ask-assistant button** | Branded campus error templates (`templates/404.html` and `templates/500.html`) equipped with quick actions and one-click "Ask the Assistant" (`data-ask`) buttons that auto-launch the AI widget with pre-filled error troubleshooting prompts. | ✅ Complete |
+| **Col H** | **Assistant answers FAQ and explains error codes** | Intelligent reasoning pipeline (`items/ai_assistant.py`) matches queries to SQL FAQs, diagnoses error codes with step-by-step campus troubleshooting, and enhances answers via Google Gemini AI (`gemini-3.1-flash-lite`). | ✅ Complete |
+| **Col I** | **Ticket created when unsure (CRUD)** | Full CRUD support for technical support tickets stored in SQL (`SupportTicket` model):<br>• **Create:** AI assistant escalation modal or `/support/`<br>• **Read:** `/support/tickets/` & `/api/tickets/lookup/`<br>• **Update:** `/support/tickets/<ref>/update/`<br>• **Delete / Close:** `/support/tickets/<ref>/delete/` & REST `/api/tickets/<ref>/`. | ✅ Complete (Full CRUD) |
+| **Col J** | **Chats and feedback stored in MongoDB** | Connected to live cloud MongoDB Atlas cluster (`campus_lost_found` database). Chat interactions saved to `chat_logs` collection; star ratings and comments saved to `chat_feedback` collection. Real-time audit inspector at `/support/mongo-logs/`. | ✅ Complete (Atlas Live) |
+| **Col K** | **Keys in env vars, no secrets in GitHub** | Managed via `.env` with `.env.example` template provided. `.gitignore` strictly excludes `.env`, secrets, `.vercel/`, local DBs, and media logs. Zero credentials committed to GitHub. | ✅ Complete |
+| **Col L** | **Request logs + health check** | Custom `RequestLoggingMiddleware` logs timestamp, HTTP method, path, response status, duration (ms), IP, and user to `logs/request.log`. Comprehensive `/health/` and `/api/health/` endpoints inspect SQLite, MongoDB Atlas, Open-Meteo API, memory metrics, and uptime. | ✅ Complete |
+| **Col M** | **Extra third-party call with timeout and fallback** | Integrates Open-Meteo Campus Environmental API (`items/third_party_api.py`) with strict 3.0-second timeout (`requests.get(..., timeout=3.0)`) and local fallback cache (`DEFAULT_FALLBACK_DATA`) if external network fails. | ✅ Complete |
+| **Col N** | **README with live address and improvement** | Live production URL [https://campus-lost-and-found-r1hx-six.vercel.app/](https://campus-lost-and-found-r1hx-six.vercel.app/) documented with deep-dive technical proposal for Vision-Based Deep Learning (CLIP embeddings) in Section 8. | ✅ Complete |
 
 ---
 

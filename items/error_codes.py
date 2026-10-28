@@ -110,7 +110,50 @@ ERROR_CATALOG = {
 }
 
 
+def get_all_error_codes():
+    """
+    Retrieve all error codes from SQL table items_errorcode.
+    Assessment Requirement: Minimum 8 Error Codes stored in SQL.
+    Falls back gracefully to ERROR_CATALOG dictionary.
+    """
+    try:
+        from .models import ErrorCode
+        sql_codes = ErrorCode.objects.filter(is_active=True)
+        if sql_codes.count() >= 8:
+            result = {}
+            for ec in sql_codes:
+                result[ec.code] = {
+                    'code': ec.code,
+                    'title': ec.title,
+                    'category': ec.category,
+                    'summary': ec.summary,
+                    'student_explanation': ec.student_explanation,
+                    'campus_troubleshooting': ec.get_troubleshooting_list(),
+                    'http_status': ec.http_status,
+                }
+            return result
+    except Exception:
+        pass
+    return ERROR_CATALOG
+
+
 def get_error_info(code: str):
-    """Retrieve detailed metadata for an error code."""
+    """Retrieve detailed metadata for an error code from SQL or dictionary fallback."""
     code_str = str(code).strip().upper()
+    try:
+        from .models import ErrorCode
+        ec = ErrorCode.objects.filter(code__iexact=code_str, is_active=True).first()
+        if ec:
+            return {
+                'code': ec.code,
+                'title': ec.title,
+                'category': ec.category,
+                'summary': ec.summary,
+                'student_explanation': ec.student_explanation,
+                'campus_troubleshooting': ec.get_troubleshooting_list(),
+                'http_status': ec.http_status,
+            }
+    except Exception:
+        pass
     return ERROR_CATALOG.get(code_str)
+

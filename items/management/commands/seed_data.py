@@ -186,8 +186,10 @@ class Command(BaseCommand):
             }
         )
 
-        # 4. Assessment Requirement: Minimum 10 FAQs stored in SQL database
-        from items.models import FAQ, SupportTicket
+        # 4. Assessment Requirement: Minimum 10 FAQs and 8 Error Codes stored in SQL database
+        from items.models import FAQ, SupportTicket, ErrorCode
+        from items.error_codes import ERROR_CATALOG
+        import json
 
         faqs_data = [
             {
@@ -271,6 +273,23 @@ class Command(BaseCommand):
                 defaults=f
             )
             seeded_faqs += 1
+
+        # Assessment Requirement: Minimum 8 Error Codes stored in SQL database
+        seeded_errors = 0
+        for code, err in ERROR_CATALOG.items():
+            ErrorCode.objects.update_or_create(
+                code=code,
+                defaults={
+                    'title': err['title'],
+                    'category': err['category'],
+                    'summary': err['summary'],
+                    'student_explanation': err['student_explanation'],
+                    'campus_troubleshooting': json.dumps(err['campus_troubleshooting']),
+                    'http_status': err['http_status'],
+                    'is_active': True,
+                }
+            )
+            seeded_errors += 1
 
         # 5. Assessment Requirement: Support tickets stored in SQL
         ticket, _ = SupportTicket.objects.get_or_create(

@@ -57,6 +57,22 @@
               {% endif %}
             </div>
           </div>
+
+          <div class="mt-3 pt-3 border-top d-flex justify-content-end gap-2">
+            <a href="{% url 'ticket_update' t.ticket_number %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-pencil-square me-1"></i> Edit Ticket
+            </a>
+            {% if t.status != 'CLOSED' %}
+              <form method="POST" action="{% url 'ticket_delete' t.ticket_number %}" onsubmit="return confirm('Are you sure you want to close ticket {{ t.ticket_number }}?');" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-x-circle me-1"></i> Close Ticket
+                </button>
+              </form>
+            {% else %}
+              <span class="badge bg-secondary align-self-center">Resolved &amp; Closed</span>
+            {% endif %}
+          </div>
         </div>
       {% endfor %}
     </div>

@@ -636,9 +636,9 @@ def user_profile(request):
 # ==============================================================================
 
 import json
-from .models import FAQ, SupportTicket
+from .models import FAQ, SupportTicket, ErrorCode
 from .forms import SupportTicketForm
-from .error_codes import ERROR_CATALOG, get_error_info
+from .error_codes import ERROR_CATALOG, get_error_info, get_all_error_codes
 from .ai_assistant import generate_ai_response
 from .third_party_api import check_third_party_health
 from .mongo_service import (
@@ -740,11 +740,28 @@ def my_support_tickets(request):
 
 def error_catalog_view(request):
     """
-    Catalog of all 8 standard and site-specific error codes.
-    Assessment Requirement: Minimum 8 error codes (400, 401, 403, 404, 429, 500, 503, CLF-1001).
+    Catalog of all 8 standard and site-specific error codes stored in SQL.
+    Assessment Requirement: Minimum 8 error codes stored in SQL.
     """
+    catalog = get_all_error_codes()
+    sql_count = ErrorCode.objects.filter(is_active=True).count()
     return render(request, 'items/error_catalog.html', {
-        'error_catalog': ERROR_CATALOG
+        'error_catalog': catalog,
+        'sql_count': sql_count
+    })
+
+
+def api_errors(request):
+    """
+    JSON API returning all 8+ error codes stored in SQL database.
+    Assessment Requirement: Minimum 8 error codes in SQL.
+    """
+    catalog = get_all_error_codes()
+    return JsonResponse({
+        'status': 'ok',
+        'count': len(catalog),
+        'source': 'SQL (items_errorcode)',
+        'errors': list(catalog.values())
     })
 
 
@@ -757,7 +774,7 @@ def error_detail_view(request, code):
 
     return render(request, 'items/error_detail.html', {
         'error': error_info,
-        'catalog': ERROR_CATALOG,
+        'catalog': get_all_error_codes(),
     })
 
 
@@ -872,7 +889,8 @@ def health_check(request):
         },
         'counts': {
             'faqs': FAQ.objects.count(),
-            'error_codes': len(ERROR_CATALOG),
+            'error_codes': ErrorCode.objects.filter(is_active=True).count(),
+            'error_codes_in_sql': ErrorCode.objects.count(),
             'tickets': SupportTicket.objects.count(),
             'items': Item.objects.count()
         },
@@ -1015,6 +1033,142 @@ def ticket_email_api(request):
         return JsonResponse({'status': 'ok', 'saved': bool(updated)})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def ticket_update_view(request, ticket_number):
+    """Update support ticket message and contact email (CRUD - Update)."""
+    ticket = get_object_or_404(SupportTicket, ticket_number=ticket_number)
+    if ticket.user and ticket.user != request.user and not request.user.is_staff:
+        messages.error(request, "You do not have permission to modify this ticket.")
+        return redirect('my_support_tickets')
+
+    if request.method == 'POST':
+        ticket.subject = request.POST.get('subject', ticket.subject).strip() or ticket.subject
+        ticket.message = request.POST.get('message', ticket.message).strip() or ticket.message
+        ticket.contact_email = request.POST.get('contact_email', ticket.contact_email).strip() or ticket.contact_email
+        priority = request.POST.get('priority', '').strip().upper()
+        if priority in dict(SupportTicket.PRIORITY_CHOICES):
+            ticket.priority = priority
+        ticket.save()
+        messages.success(request, f"Ticket {ticket.ticket_number} updated successfully.")
+        return redirect('my_support_tickets')
+
+    return render(request, 'items/ticket_update.html', {'ticket': ticket})
+
+
+@login_required
+def ticket_delete_view(request, ticket_number):
+    """Close or delete a support ticket (CRUD - Delete)."""
+    ticket = get_object_or_404(SupportTicket, ticket_number=ticket_number)
+    if ticket.user and ticket.user != request.user and not request.user.is_staff:
+        messages.error(request, "You do not have permission to manage this ticket.")
+        return redirect('my_support_tickets')
+
+    if request.method == 'POST':
+        action = request.POST.get('action', 'close')
+        if action == 'delete' and request.user.is_staff:
+            ticket.delete()
+            messages.info(request, f"Ticket {ticket_number} deleted permanently.")
+        else:
+            ticket.status = 'CLOSED'
+            ticket.save()
+            messages.info(request, f"Ticket {ticket.ticket_number} has been closed.")
+        return redirect('my_support_tickets')
+
+    return redirect('my_support_tickets')
+
+
+@csrf_exempt
+def api_ticket_crud(request, ticket_number=None):
+    """
+    REST API endpoint for Support Ticket CRUD:
+    - POST: Create ticket (with automatic ticket_number)
+    - GET: Retrieve ticket by ticket_number
+    - PUT/PATCH: Update ticket fields
+    - DELETE: Close or delete ticket
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            subject = data.get('subject', '').strip()
+            message = data.get('message', '').strip()
+            email = data.get('contact_email', '').strip()
+            code = data.get('related_error_code', '').strip()
+            priority = data.get('priority', 'MEDIUM').strip().upper()
+
+            if not subject or not message:
+                return JsonResponse({'error': 'subject and message are required'}, status=400)
+
+            user = request.user if request.user.is_authenticated else None
+            t = SupportTicket.objects.create(
+                user=user,
+                subject=subject,
+                message=message,
+                contact_email=email or (user.email if user else ''),
+                related_error_code=code,
+                priority=priority if priority in dict(SupportTicket.PRIORITY_CHOICES) else 'MEDIUM',
+                status='OPEN'
+            )
+            return JsonResponse({
+                'status': 'created',
+                'ticket_number': t.ticket_number,
+                'subject': t.subject,
+                'priority': t.priority,
+                'created_at': t.created_at.isoformat()
+            }, status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    elif request.method == 'GET':
+        if not ticket_number:
+            tickets = SupportTicket.objects.all().order_by('-created_at')[:25]
+            return JsonResponse({
+                'count': tickets.count(),
+                'tickets': [{'ticket_number': t.ticket_number, 'subject': t.subject, 'status': t.status} for t in tickets]
+            })
+        ticket = SupportTicket.objects.filter(ticket_number__iexact=ticket_number).first()
+        if not ticket:
+            return JsonResponse({'error': 'Ticket not found'}, status=404)
+        return JsonResponse({
+            'ticket_number': ticket.ticket_number,
+            'subject': ticket.subject,
+            'message': ticket.message,
+            'status': ticket.status,
+            'priority': ticket.priority,
+            'contact_email': ticket.contact_email,
+            'created_at': ticket.created_at.isoformat()
+        })
+
+    elif request.method in ['PUT', 'PATCH']:
+        ticket = SupportTicket.objects.filter(ticket_number__iexact=ticket_number).first()
+        if not ticket:
+            return JsonResponse({'error': 'Ticket not found'}, status=404)
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            if 'message' in data:
+                ticket.message = data['message']
+            if 'contact_email' in data:
+                ticket.contact_email = data['contact_email']
+            if 'status' in data and data['status'] in dict(SupportTicket.STATUS_CHOICES):
+                ticket.status = data['status']
+            if 'priority' in data and data['priority'] in dict(SupportTicket.PRIORITY_CHOICES):
+                ticket.priority = data['priority']
+            ticket.save()
+            return JsonResponse({'status': 'updated', 'ticket_number': ticket.ticket_number})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    elif request.method == 'DELETE':
+        ticket = SupportTicket.objects.filter(ticket_number__iexact=ticket_number).first()
+        if not ticket:
+            return JsonResponse({'error': 'Ticket not found'}, status=404)
+        ticket.status = 'CLOSED'
+        ticket.save()
+        return JsonResponse({'status': 'closed', 'ticket_number': ticket.ticket_number})
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 
 
 @csrf_exempt

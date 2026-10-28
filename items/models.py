@@ -193,6 +193,41 @@ class FAQ(models.Model):
         return self.question
 
 
+class ErrorCode(models.Model):
+    """
+    Catalog of HTTP and site-specific error codes stored in SQL database.
+    Assessment Requirement: Minimum 8 Error Codes stored in SQL.
+    """
+    code = models.CharField(max_length=20, unique=True, help_text="HTTP status or campus code (e.g. 404, CLF-1001)")
+    title = models.CharField(max_length=150)
+    category = models.CharField(max_length=100)
+    summary = models.TextField()
+    student_explanation = models.TextField()
+    campus_troubleshooting = models.TextField(help_text="JSON list or newline-separated troubleshooting instructions")
+    http_status = models.PositiveIntegerField(default=500)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['http_status', 'code']
+        verbose_name = 'Error Code'
+        verbose_name_plural = 'Error Codes'
+
+    def __str__(self):
+        return f"{self.code} - {self.title}"
+
+    def get_troubleshooting_list(self):
+        try:
+            import json
+            data = json.loads(self.campus_troubleshooting)
+            if isinstance(data, list):
+                return data
+        except Exception:
+            pass
+        return [s.strip().lstrip('•- ') for s in self.campus_troubleshooting.splitlines() if s.strip()]
+
+
 class SupportTicket(models.Model):
     STATUS_CHOICES = [
         ('OPEN', 'Open'),

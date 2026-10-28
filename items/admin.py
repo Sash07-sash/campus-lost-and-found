@@ -126,7 +126,15 @@ class ItemReportAdmin(admin.ModelAdmin):
         self.message_user(request, "Reports marked as resolved.")
 
 
-from .models import FAQ, SupportTicket
+from .models import FAQ, SupportTicket, ErrorCode
+
+
+@admin.register(ErrorCode)
+class ErrorCodeAdmin(admin.ModelAdmin):
+    list_display = ('code', 'title', 'http_status', 'category', 'is_active', 'updated_at')
+    list_filter = ('category', 'http_status', 'is_active')
+    search_fields = ('code', 'title', 'summary', 'student_explanation')
+    list_editable = ('is_active',)
 
 
 @admin.register(FAQ)
