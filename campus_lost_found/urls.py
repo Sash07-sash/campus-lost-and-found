@@ -30,14 +30,15 @@ handler500 = 'items.views.custom_500_view'
 handler403 = 'items.views.custom_403_view'
 handler400 = 'items.views.custom_400_view'
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-# Catch-all pattern to guarantee custom 404 page renders for any incorrect address
 from django.urls import re_path
+from django.views.static import serve
 from items.views import custom_404_view
+
+# Always serve media and static files in both development and production (e.g. Vercel)
 urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    # Catch-all pattern to guarantee custom 404 page renders for any unknown address
     re_path(r'^.*$', custom_404_view),
 ]
 
